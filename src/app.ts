@@ -1,0 +1,29 @@
+import  express, { Application }  from "express"
+import { connect } from "./infra/database/database"
+import { errorMiddleware } from "./middleware/error.middleware"
+import { EventRoutes } from "./routes/eventos.routes"
+
+export class App{
+    public app: Application
+    private eventRoutes = new EventRoutes()
+    constructor() {
+        this.app = express()
+        this.middlewareInitializer()
+        this.initializeRoutes()
+        this.interceptionErros()
+        connect()
+    }
+    initializeRoutes() {
+        this.app.use('/events', this.eventRoutes.router)
+    }
+    interceptionErros() {
+        this.app.use(errorMiddleware)
+    }
+    middlewareInitializer() {
+        this.app.use(express.json())
+        this.app.use(express.urlencoded({extended: true}))
+    }
+    listen() {
+        this.app.listen(3333, ()=> console.log('server is running'))
+    }
+}
