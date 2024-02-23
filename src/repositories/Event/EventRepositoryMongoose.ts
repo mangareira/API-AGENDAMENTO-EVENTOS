@@ -9,7 +9,7 @@ const eventSchema = new mongoose.Schema({
         longitude: String,
     },
     date: Date,
-    createAt: {
+    createdAt: {
         type: Date,
         default: Date.now
     },

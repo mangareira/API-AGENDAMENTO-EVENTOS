@@ -13,13 +13,13 @@ export class App{
         this.interceptionErros()
         connect()
     }
-    initializeRoutes() {
+    private initializeRoutes() {
         this.app.use('/events', this.eventRoutes.router)
     }
-    interceptionErros() {
+    private interceptionErros() {
         this.app.use(errorMiddleware)
     }
-    middlewareInitializer() {
+    private middlewareInitializer() {
         this.app.use(express.json())
         this.app.use(express.urlencoded({extended: true}))
     }
