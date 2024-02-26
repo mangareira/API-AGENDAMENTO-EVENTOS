@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest --forceExit",
+    "test": "jest",
     "dev": "tsx watch ./src/main.ts"
   },
   "engines": {

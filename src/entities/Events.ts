@@ -14,5 +14,6 @@ export class Event {
         public participants: User[],
         public price: Price[],
         public city: string,
+        public categories: string[],
     ) {}
 }
