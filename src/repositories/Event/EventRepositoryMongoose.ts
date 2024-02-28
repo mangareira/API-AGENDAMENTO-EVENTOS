@@ -2,6 +2,7 @@ import mongoose from "mongoose"
 import { Event } from "../../entities/Events"
 import { EventRepository } from "./EventRepository"
 import { Location } from "../../entities/Location"
+import { User } from "../../entities/User"
 
 const eventSchema = new mongoose.Schema({
     title: String,
@@ -47,5 +48,21 @@ export class EventRepositoryMongoose implements EventRepository{
     async findEventsByCategory(category: string): Promise<Event[]> {
         const findEvent = await EventModel.find({categories: category}).exec()
         return findEvent.map((event) => event.toObject())
+    }
+    async findEventsByName(name: string): Promise<Event[]> {
+        const findEvent = await EventModel.find({title: {
+            $regex: name,
+            $options: 'i'
+        } }).exec()
+        return findEvent.map((event) => event.toObject())
+    }  
+    async findEventsById(id: string): Promise<Event | undefined> {
+        const findEvent = await EventModel.findOne({_id: id }).exec()
+        return findEvent ? findEvent.toObject(): undefined
+    }
+    async update(event: Event, id: string): Promise<any> {
+        const updateEvent = await EventModel.updateMany({_id: id}, event,)
+        console.log(updateEvent)
+        return event
     }
 }

@@ -31,9 +31,7 @@ export class EventController {
             const events = await this.eventUseCase.findEventByLocation(
                 String(latitude),
                 String(longitude),
-            )
-            console.log(events);
-            
+            )            
             return res.status(200).json(events)
         } catch (error) {
             next(error)
@@ -51,5 +49,40 @@ export class EventController {
             next(error)
         }
     }
-    
+    async findEventsByName(req: Request, res: Response, next: NextFunction) {
+        const {name} = req.query
+        console.log(name);
+        
+        try {
+            const events = await this.eventUseCase.findEventByName(
+                String(name),
+            )            
+            return res.status(200).json(events)
+        } catch (error) {
+            next(error)
+        }
+    }
+    async findEventsById(req: Request, res: Response, next: NextFunction) {
+        const {id} = req.params
+
+        try {
+            const events = await this.eventUseCase.findEventById(
+                String(id),
+            )            
+            return res.status(200).json(events)
+        } catch (error) {
+            next(error)
+        }
+    }
+    async addParticipant(req: Request, res: Response, next: NextFunction) {
+        const { name, email } = req.body
+        const { id } = req.params
+
+        try {
+            const events = await this.eventUseCase.addParticipant(id, name, email)
+            return res.status(200).json(events)
+        } catch (error) {
+            next(error)
+        }
+    }
 }

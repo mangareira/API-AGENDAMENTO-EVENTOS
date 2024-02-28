@@ -2,6 +2,7 @@ import axios from "axios";
 import { Event } from "../entities/Events";
 import { HttpException } from "../interface/HttpException";
 import { EventRepository } from "../repositories/Event/EventRepository";
+import { UserRepositoryMongoose } from "../repositories/User/UserRepositoryMongoose";
 
 export class EventUseCase {
     constructor(private eventRepository: EventRepository) {}
@@ -52,6 +53,55 @@ export class EventUseCase {
         return events
     }
 
+    async findEventByName(name: string) {
+        if(!name) {
+            throw new HttpException(400, 'Name is required')
+        }
+        const events = await this.eventRepository.findEventsByName(name)
+        
+        return events
+    }
+
+    async findEventById(id: string) {
+        if(!id) {
+            throw new HttpException(400, 'Id is required')
+        }
+        const events = await this.eventRepository.findEventsById(id)
+        
+        return events
+    }
+
+    async addParticipant(id: string, name: string, email: string) {
+        const event = await this.eventRepository.findEventsById(id)
+
+        if(!event) {
+            throw  new HttpException(400, 'Event not found')
+        }
+
+        const userRepository = new UserRepositoryMongoose()
+
+        const participant = {name, email}
+
+        let user:any = {}
+
+        const verifyIsUserExists = await userRepository.veridyIsUserExists(email)
+        if (!verifyIsUserExists) {
+            user = await userRepository.add(participant)
+            console.log(user);
+        } else {
+            user = verifyIsUserExists
+        }
+        if(event.participants.includes(user._id)) {
+            throw  new HttpException(400, 'User already exists')
+        }
+        
+        event.participants.push(user._id)
+
+        const updateEvent = await this.eventRepository.update(event, id)
+        
+        return event
+    }
+
     private async getCityNameCoordinates(latitude: string, longitude: string) {
 
         
@@ -74,7 +124,6 @@ export class EventUseCase {
         }
         
     }
-
     private calculteDistance( lat1: number, lon1: number, lat2: number, lon2: number ): number {
         const R = 6371
         const dLat = this.deg2rad(lat2-lat1)
