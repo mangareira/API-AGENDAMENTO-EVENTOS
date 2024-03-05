@@ -15,5 +15,6 @@ export class Event {
         public price: Price[],
         public city: string,
         public categories: string[],
+        public formattedAddress: string,
     ) {}
 }

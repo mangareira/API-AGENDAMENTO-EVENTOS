@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 import { Event } from "../../entities/Events"
 import { EventRepository } from "./EventRepository"
 import { Location } from "../../entities/Location"
-import { User } from "../../entities/User"
+import { IFIlter } from "../../interface/IFilter"
 
 const eventSchema = new mongoose.Schema({
     title: String,
@@ -23,6 +23,7 @@ const eventSchema = new mongoose.Schema({
         type: Array
     },
     city: String,
+    formattedAddress: String,
     participants: {
         type: Array,
         ref: 'User'
@@ -32,6 +33,7 @@ const eventSchema = new mongoose.Schema({
 const EventModel = mongoose.model('Event', eventSchema)
 
 export class EventRepositoryMongoose implements EventRepository{
+    
     async add(event: Event): Promise<Event> {
         const eventModel = new EventModel(event)
         await eventModel.save()
@@ -56,13 +58,35 @@ export class EventRepositoryMongoose implements EventRepository{
         } }).exec()
         return findEvent.map((event) => event.toObject())
     }  
-    async findEventsById(id: string): Promise<Event | undefined> {
-        const findEvent = await EventModel.findOne({_id: id }).exec()
+    async findEventsById(id: string): Promise<Event | undefined> {        
+        const findEvent = await EventModel.findOne({_id: id}).exec()
         return findEvent ? findEvent.toObject(): undefined
     }
     async update(event: Event, id: string): Promise<any> {
         const updateEvent = await EventModel.updateMany({_id: id}, event,)
-        console.log(updateEvent)
         return event
+    }
+    async findEventsMain(date: Date): Promise<Event[]> {
+        const endDate = new Date(date);
+        endDate.setMonth(endDate.getMonth() + 1);
+        const findEvent = await EventModel.find({
+            date: { $gte: date, $lt: endDate },
+        })
+        .limit(4)
+        .exec();    
+        return findEvent.map((event) => event.toObject());
+    }
+    async findEventsByFilter(data: IFIlter): Promise<Event[]> {
+        const findEvent = await EventModel.find({
+            title: {
+                $regex: data.name,
+                $options: 'i'
+            },
+            date: {
+                $gte: data.date
+            },
+            categories: data.category,
+        }).exec()
+        return findEvent.map((event) => event.toObject())
     }
 }

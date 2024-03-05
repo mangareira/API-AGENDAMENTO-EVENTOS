@@ -3,6 +3,7 @@ import { Event } from "../entities/Events";
 import { HttpException } from "../interface/HttpException";
 import { EventRepository } from "../repositories/Event/EventRepository";
 import { UserRepositoryMongoose } from "../repositories/User/UserRepositoryMongoose";
+import { IFIlter } from "../interface/IFilter";
 
 export class EventUseCase {
     constructor(private eventRepository: EventRepository) {}
@@ -22,7 +23,8 @@ export class EventUseCase {
         const cityName = await this.getCityNameCoordinates(eventData.location.latitude, eventData.location.longitude)
         eventData = {
             ...eventData,
-            city: cityName.cityName
+            city: cityName.cityName,
+            formattedAddress: cityName.formattedAddress
         }
         const result = await this.eventRepository.add(eventData)
         return result
@@ -101,6 +103,16 @@ export class EventUseCase {
         
         return event
     }
+    async findEventsMain() {
+        const events = await this.eventRepository.findEventsMain(new Date());
+    
+        return events;
+    }
+
+    async filterEvents(data: IFIlter) {
+        const events = await this.eventRepository.findEventsByFilter(data)
+    }
+
 
     private async getCityNameCoordinates(latitude: string, longitude: string) {
 
@@ -116,7 +128,11 @@ export class EventUseCase {
                         type.types.includes('administrative_area_level_2') && 
                         type.types.includes('political')
                 )
-                return {cityName: cityType.long_name}
+                const formattedAddress = response.data.results[0].formatted_address
+                return {
+                    cityName: cityType.long_name,
+                    formattedAddress,
+                }
             }
             throw new HttpException(404, 'City not found')
         } catch (error) {
