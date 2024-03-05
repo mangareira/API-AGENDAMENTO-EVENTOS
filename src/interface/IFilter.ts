@@ -1,12 +1,9 @@
-
-export class IFIlter {
-    constructor(
-        public name: string ,
-        public latitude: number,
-        public longitude: number,
-        public date: Date,
-        public price: string,
-        public city: string,
-        public category: string,
-    ) {}
-}
+export interface IFilterProps {
+    latitude: number;
+    longitude: number;
+    name: string;
+    date: string;
+    category: string;
+    radius: number;
+    price: number;
+  }

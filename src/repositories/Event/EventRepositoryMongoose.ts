@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 import { Event } from "../../entities/Events"
 import { EventRepository } from "./EventRepository"
 import { Location } from "../../entities/Location"
-import { IFIlter } from "../../interface/IFilter"
+import { IFilterProps } from "../../interface/IFilter"
 
 const eventSchema = new mongoose.Schema({
     title: String,
@@ -76,17 +76,18 @@ export class EventRepositoryMongoose implements EventRepository{
         .exec();    
         return findEvent.map((event) => event.toObject());
     }
-    async findEventsByFilter(data: IFIlter): Promise<Event[]> {
+    async findEventsByFilter(data: IFilterProps): Promise<Event[]> {
         const findEvent = await EventModel.find({
             title: {
                 $regex: data.name,
                 $options: 'i'
             },
-            date: {
-                $gte: data.date
-            },
-            categories: data.category,
+            // date: {
+            //     $gte: data.date
+            // },
+            // categories: data.category,
         }).exec()
+        console.log(findEvent)
         return findEvent.map((event) => event.toObject())
     }
 }

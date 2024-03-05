@@ -1,6 +1,6 @@
 import { Event } from "../../entities/Events";
 import { Location } from "../../entities/Location";
-import { IFIlter } from "../../interface/IFilter";
+import { IFilterProps } from "../../interface/IFilter";
 
 export interface EventRepository {
     add(event: Event): Promise<Event>
@@ -10,6 +10,6 @@ export interface EventRepository {
     findEventsMain(date: Date): Promise<Event[]>
     findEventsByName(name: string): Promise<Event[]>;
     findEventsById(id: string): Promise<Event | undefined>
-    findEventsByFilter(data: IFIlter): Promise<Event[]>
+    findEventsByFilter(data: IFilterProps): Promise<Event[]>
     update(event: Event, id: string): Promise<any>
 }

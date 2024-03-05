@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { EventUseCase } from "../useCases/Event.usecase";
 import { Event } from "../entities/Events";
-import { IFIlter } from "../interface/IFilter";
+import { IFilterProps } from "../interface/IFilter";
 
 export class EventController {
     constructor(private eventUseCase: EventUseCase) {}
@@ -94,10 +94,19 @@ export class EventController {
         }
     }
     async filterEvents(req: Request, res: Response, next: NextFunction) {
-        const data: IFIlter = req.query  
-        //const data = {name, latitude, longitude, date, category, radius, price}
+        const { latitude, longitude, name, date, category, radius, price } = req.query  
         try {
-            const events = await this.eventUseCase.filterEvents(data)
+            const events = await this.eventUseCase.filterEvents({
+                latitude: Number(latitude),
+                longitude: Number(longitude),
+                name: String(name),
+                date: String(date),
+                category: String(category),
+                radius: Number(radius),
+                price: Number(price),
+              })
+              console.log(events);
+              
             return res.status(200).json(events)
         } catch (error) {
             next(error)

@@ -3,8 +3,7 @@ import { Event } from "../entities/Events";
 import { HttpException } from "../interface/HttpException";
 import { EventRepository } from "../repositories/Event/EventRepository";
 import { UserRepositoryMongoose } from "../repositories/User/UserRepositoryMongoose";
-import { IFIlter } from "../interface/IFilter";
-
+import { IFilterProps } from "../interface/IFilter";
 export class EventUseCase {
     constructor(private eventRepository: EventRepository) {}
 
@@ -109,8 +108,25 @@ export class EventUseCase {
         return events;
     }
 
-    async filterEvents(data: IFIlter) {
-        const events = await this.eventRepository.findEventsByFilter(data)
+    async filterEvents({
+        latitude,
+        longitude,
+        name,
+        date,
+        category,
+        radius,
+        price,
+      }: IFilterProps) {
+        const events = await this.eventRepository.findEventsByFilter({
+            latitude,
+            longitude,
+            name,
+            date,
+            category,
+            radius,
+            price,
+          })
+        return events
     }
 
 
