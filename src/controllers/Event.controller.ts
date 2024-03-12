@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import { EventUseCase } from "../useCases/Event.usecase";
 import { Event } from "../entities/Events";
-import { IFilterProps } from "../interface/IFilter";
 
 export class EventController {
     constructor(private eventUseCase: EventUseCase) {}
     async create(req: Request, res: Response, next: NextFunction) {
         let eventData: Event = req.body
+        
         const files = req.files as any        
         if (files) {
             const banner = files.banner[0];
@@ -23,7 +23,7 @@ export class EventController {
             return res.status(201).json({message: 'Evento criado com sucesso.'})
         } catch (error) {
             next(error)
-        }
+        }        
     }
     async findEventByLocation(req: Request, res: Response, next: NextFunction) {
         const {latitude, longitude} = req.query
@@ -62,8 +62,7 @@ export class EventController {
         }
     }
     async findEventsById(req: Request, res: Response, next: NextFunction) {
-        const {id} = req.params
-
+        const {id} = req.params        
         try {
             const events = await this.eventUseCase.findEventById(
                 String(id),
@@ -78,7 +77,7 @@ export class EventController {
         const { id } = req.params
 
         try {
-            const events = await this.eventUseCase.addParticipant(id, name, email)
+            const events = await this.eventUseCase.addParticipant(id, name, email)            
             return res.status(200).json(events)
         } catch (error) {
             next(error)
@@ -94,7 +93,7 @@ export class EventController {
         }
     }
     async filterEvents(req: Request, res: Response, next: NextFunction) {
-        const { latitude, longitude, name, date, category, radius, price } = req.query  
+        const { latitude, longitude, name, date, category, radius, price } = req.query          
         try {
             const events = await this.eventUseCase.filterEvents({
                 latitude: Number(latitude),
@@ -104,9 +103,7 @@ export class EventController {
                 category: String(category),
                 radius: Number(radius),
                 price: Number(price),
-              })
-              console.log(events);
-              
+              })              
             return res.status(200).json(events)
         } catch (error) {
             next(error)

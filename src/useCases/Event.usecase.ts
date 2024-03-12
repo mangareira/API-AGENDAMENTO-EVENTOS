@@ -41,7 +41,7 @@ export class EventUseCase {
                 Number(event.location.latitude),
                 Number(event.location.longitude)
             )
-            return distance <= 3
+            return distance <= 50
         })
         return eventWithRadius
     }
@@ -73,6 +73,7 @@ export class EventUseCase {
     }
 
     async addParticipant(id: string, name: string, email: string) {
+        
         const event = await this.eventRepository.findEventsById(id)
 
         if(!event) {
@@ -85,18 +86,19 @@ export class EventUseCase {
 
         let user:any = {}
 
-        const verifyIsUserExists = await userRepository.veridyIsUserExists(email)
+        const verifyIsUserExists = await userRepository.veridyIsUserExists(email)        
         if (!verifyIsUserExists) {
             user = await userRepository.add(participant)
-            console.log(user);
+            const userId = await userRepository.veridyIsUserExists(email)  
+            user = userId      
         } else {
-            user = verifyIsUserExists
-        }
-        if(event.participants.includes(user._id)) {
+            user = verifyIsUserExists            
+        }        
+        if(event.participants.includes(user._id)) {            
             throw  new HttpException(400, 'User already exists')
         }
-        
-        event.participants.push(user._id)
+              
+        event.participants.push(user._id)        
 
         const updateEvent = await this.eventRepository.update(event, id)
         

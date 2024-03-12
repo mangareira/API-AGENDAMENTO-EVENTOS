@@ -1,17 +1,19 @@
 import mongoose from "mongoose"
 import { UserRepository } from "./UserRepository"
 import { User } from "../../entities/User"
+import {randomUUID} from 'crypto'
 
 const userSchema = new mongoose.Schema({
     _id: {
         type: String,
-        default: new mongoose.Types.ObjectId().toString(),
+        default: () => randomUUID()
     },
     name: String,
     email: String
 })
 
 const UserModel = mongoose.model('User', userSchema)
+
 
 export class UserRepositoryMongoose implements UserRepository{
     async add(user: User): Promise<User> {

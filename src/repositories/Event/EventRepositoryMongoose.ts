@@ -72,22 +72,37 @@ export class EventRepositoryMongoose implements EventRepository{
         const findEvent = await EventModel.find({
             date: { $gte: date, $lt: endDate },
         })
+        .sort({date: 1})
         .limit(4)
         .exec();    
         return findEvent.map((event) => event.toObject());
     }
-    async findEventsByFilter(data: IFilterProps): Promise<Event[]> {
-        const findEvent = await EventModel.find({
-            title: {
-                $regex: data.name,
-                $options: 'i'
-            },
-            // date: {
-            //     $gte: data.date
-            // },
-            // categories: data.category,
-        }).exec()
-        console.log(findEvent)
+    async findEventsByFilter(data: IFilterProps): Promise<Event[]> {        
+        const query = {
+            $and : [
+                {title: data.name ? {
+                    $regex: data.name,
+                    $options: 'i'
+                }: {$exists: true}},
+                { date: data.date ? { $gte: new Date(data.date) } : { $exists: true } },
+                {categories: data.category ? {
+                    $in: [data.category]
+                }: {$exists: true}},
+                // {'price.amount': {
+                //     $gte: data.price ? String(data.price): '0'
+                // }},
+                {'location.latitude': {
+                        $gte: String(data.latitude - data.radius),
+                        $lte: String(data.latitude + data.radius)
+                    },
+                'location.longitude': {
+                        $gte: String(data.longitude - data.radius),
+                        $lte: String(data.longitude + data.radius)
+                    },
+                },
+            ]
+        }
+        const findEvent = await EventModel.find(query).exec()        
         return findEvent.map((event) => event.toObject())
     }
 }
