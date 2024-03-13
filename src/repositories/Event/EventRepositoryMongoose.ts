@@ -15,6 +15,7 @@ const eventSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
+    coupons: [String],
     description: String,
     categories: [String],
     banner: String,
