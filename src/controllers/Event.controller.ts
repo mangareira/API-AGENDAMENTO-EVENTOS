@@ -1,6 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { EventUseCase } from "../useCases/Event.usecase";
 import { Event } from "../entities/Events";
+import { API } from "../config";
+import { User } from "../entities/User";
+import { HttpException } from "../interface/HttpException";
 
 export class EventController {
     constructor(private eventUseCase: EventUseCase) {}
@@ -73,14 +76,29 @@ export class EventController {
         }
     }
     async addParticipant(req: Request, res: Response, next: NextFunction) {
-        const { name, email } = req.body
-        const { id } = req.params
+        const { id } = req.params;
+        const { name, email, valor } = req.body;  
+        try {     
+            if (!name || !email || !valor || isNaN(valor)) {
+                throw new HttpException(400, 'Nome, e-mail e valor do pagamento são obrigatórios');
+            }
 
-        try {
-            const events = await this.eventUseCase.addParticipant(id, name, email)            
-            return res.status(200).json(events)
+            const participant: User = {
+                name,
+                email,
+                payment: {
+                    status: 'Pendente',
+                    txid: '',
+                    valor: Number(),
+                    qrCode: ''
+                }
+            };
+
+            const updatedEvent = await this.eventUseCase.addParticipant(id, participant, parseFloat(valor));
+
+            res.status(200).json(updatedEvent);
         } catch (error) {
-            next(error)
+            next(error);
         }
     }
     async findMainEvents(req: Request, res: Response, next: NextFunction) {
@@ -108,5 +126,15 @@ export class EventController {
         } catch (error) {
             next(error)
         }      
+    }
+    async confirmPayment(req: Request, res: Response, next: NextFunction) {
+        const {id} = req.params
+
+        try {
+            const event = await this.eventUseCase.comfirmPayment(id)
+            return res.status(200).json(event)
+        } catch (error) {
+            next(error)
+        }
     }
 }

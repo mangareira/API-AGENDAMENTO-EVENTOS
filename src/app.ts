@@ -5,6 +5,7 @@ import { EventRoutes } from "./routes/eventos.routes"
 import cors from 'cors'
 import path from 'path'
 
+
 export class App{
     public app: Application
     private eventRoutes = new EventRoutes()

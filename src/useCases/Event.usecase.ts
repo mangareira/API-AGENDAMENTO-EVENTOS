@@ -4,6 +4,8 @@ import { HttpException } from "../interface/HttpException";
 import { EventRepository } from "../repositories/Event/EventRepository";
 import { UserRepositoryMongoose } from "../repositories/User/UserRepositoryMongoose";
 import { IFilterProps } from "../interface/IFilter";
+import { API } from "../config";
+import { User } from "../entities/User";
 export class EventUseCase {
     constructor(private eventRepository: EventRepository) {}
 
@@ -72,8 +74,7 @@ export class EventUseCase {
         return events
     }
 
-    async addParticipant(id: string, name: string, email: string) {
-        
+    async addParticipant(id: string, participant: User, paymentAmount: number) {
         const event = await this.eventRepository.findEventsById(id)
 
         if(!event) {
@@ -82,27 +83,31 @@ export class EventUseCase {
 
         const userRepository = new UserRepositoryMongoose()
 
-        const participant = {name, email}
-
         let user:any = {}
 
-        const verifyIsUserExists = await userRepository.veridyIsUserExists(email)        
+        //const paymentPix =  await this.payment(paymentAmount)   
+        const verifyIsUserExists = await userRepository.veridyIsUserExists(participant.email)        
         if (!verifyIsUserExists) {
-            user = await userRepository.add(participant)
-            const userId = await userRepository.veridyIsUserExists(email)  
+            participant.payment = {
+                 status: 'Pendente', 
+                 txid: 'test'/*paymentPix.response.data.txid*/, 
+                 valor: paymentAmount, 
+                 qrCode:'test2' //paymentPix.qrcode
+            }
+            user = await userRepository.add(participant)            
+            const userId = await userRepository.veridyIsUserExists(participant.email)  
             user = userId      
         } else {
             user = verifyIsUserExists            
         }        
-        if(event.participants.includes(user._id)) {            
-            throw  new HttpException(400, 'User already exists')
-        }
-              
-        event.participants.push(user._id)        
-
+        if (!event.participants.includes(user._id)) {
+            event.participants.push(user._id);
+        } else {
+            throw new HttpException(400, 'Usuário já está inscrito no evento');
+        } 
         const updateEvent = await this.eventRepository.update(event, id)
         
-        return event
+        return {participantId: user._id}
     }
     async findEventsMain() {
         const events = await this.eventRepository.findEventsMain(new Date());
@@ -131,10 +136,19 @@ export class EventUseCase {
         return events
     }
 
+    async comfirmPayment(id: string) {
+        const userRepository = new UserRepositoryMongoose()
+        const findParticipant = await userRepository.findUser(id)
+        if(findParticipant) {
+            return findParticipant
+        } else {
+            throw new HttpException(400, 'Usuario não existe')
+        }
+
+    }
+
 
     private async getCityNameCoordinates(latitude: string, longitude: string) {
-
-        
 
         try {
             const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyDoAYR3fYzgI5bOuGldIG4c2hMni5dNBTk`)
@@ -174,5 +188,27 @@ export class EventUseCase {
     }
     private deg2rad(deg: number) {
         return deg * (Math.PI / 180)
+    }
+    private async payment(valor: number) {
+        const api =  await API({
+            clientId: process.env.GN_CLIENT_ID,
+            clientSecret: process.env.GN_CLIENT_SECRET
+        })
+        const dataCob = {
+            calendario: {
+              expiracao: 3600
+            },
+            valor: {
+              original: String(valor)
+            },
+            chave: '126bec4a-2eb6-4b79-a045-78db68412899',
+            solicitacaoPagador: 'Cobrança dos serviços prestados.'
+        }
+
+        const response = await api.post('/v2/cob', dataCob)
+        const qrcode = await api.get(`/v2/loc/${response.data.loc.id}/qrcode`)
+        return {
+            qrcode, response
+        }
     }
 }
