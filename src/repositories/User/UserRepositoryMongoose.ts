@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
     payment: {
         status: String,
         txid: String,
-        valor: Number,
+        valor: String,
         qrCode: String,
     }
 

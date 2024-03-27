@@ -4,8 +4,11 @@ import { authenticate } from "../Auth";
 
 export const API = async  (credintial: any) =>{
 
-    const authResponse = await authenticate(credintial)
-    const accessToken = authResponse.data?.access_token
+    
+    const authResponse = await authenticate(credintial)    
+    
+    const accessToken = await authResponse.data?.access_token    
+    
     const post = axios.create({
         baseURL: process.env.GN_ENDPOINT,
         httpsAgent: agent,
@@ -14,5 +17,6 @@ export const API = async  (credintial: any) =>{
             'Content-Type': 'application/json'
         }
     })
+    
     return post
 }

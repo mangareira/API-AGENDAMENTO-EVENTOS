@@ -92,9 +92,8 @@ export class EventController {
                     valor: Number(),
                     qrCode: ''
                 }
-            };
-
-            const updatedEvent = await this.eventUseCase.addParticipant(id, participant, parseFloat(valor));
+            };            
+            const updatedEvent = await this.eventUseCase.addParticipant(id, participant, valor);
 
             res.status(200).json(updatedEvent);
         } catch (error) {

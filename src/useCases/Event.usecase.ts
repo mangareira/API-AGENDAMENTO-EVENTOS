@@ -8,6 +8,8 @@ import { API } from "../config";
 import { User } from "../entities/User";
 export class EventUseCase {
     constructor(private eventRepository: EventRepository) {}
+    
+    
 
     async create(eventData: Event) {
         
@@ -74,7 +76,8 @@ export class EventUseCase {
         return events
     }
 
-    async addParticipant(id: string, participant: User, paymentAmount: number) {
+    async addParticipant(id: string, participant: User, paymentAmount: string) {
+
         const event = await this.eventRepository.findEventsById(id)
 
         if(!event) {
@@ -83,16 +86,18 @@ export class EventUseCase {
 
         const userRepository = new UserRepositoryMongoose()
 
-        let user:any = {}
+        let user:any = {}        
 
-        //const paymentPix =  await this.payment(paymentAmount)   
+        const paymentPix =  await this.payment(paymentAmount)
+
+           
         const verifyIsUserExists = await userRepository.veridyIsUserExists(participant.email)        
         if (!verifyIsUserExists) {
             participant.payment = {
                  status: 'Pendente', 
-                 txid: 'test'/*paymentPix.response.data.txid*/, 
-                 valor: paymentAmount, 
-                 qrCode:'test2' //paymentPix.qrcode
+                 txid: paymentPix.response.data.txid, 
+                 valor: paymentAmount,
+                 qrCode:paymentPix.qrcode.data.imagemQrcode
             }
             user = await userRepository.add(participant)            
             const userId = await userRepository.veridyIsUserExists(participant.email)  
@@ -106,7 +111,6 @@ export class EventUseCase {
             throw new HttpException(400, 'Usuário já está inscrito no evento');
         } 
         const updateEvent = await this.eventRepository.update(event, id)
-        
         return {participantId: user._id}
     }
     async findEventsMain() {
@@ -189,24 +193,27 @@ export class EventUseCase {
     private deg2rad(deg: number) {
         return deg * (Math.PI / 180)
     }
-    private async payment(valor: number) {
+    private async payment(valor: string) {
+        
         const api =  await API({
             clientId: process.env.GN_CLIENT_ID,
             clientSecret: process.env.GN_CLIENT_SECRET
-        })
+        })              
         const dataCob = {
-            calendario: {
-              expiracao: 3600
+            "calendario": {
+              "expiracao": 3600
             },
-            valor: {
-              original: String(valor)
+            "valor": {
+              "original": valor
             },
-            chave: '126bec4a-2eb6-4b79-a045-78db68412899',
-            solicitacaoPagador: 'Cobrança dos serviços prestados.'
-        }
+            "chave": "71cdf9ba-c695-4e3c-b010-abb521a3f1be",
+            "solicitacaoPagador": "Cobrança dos serviços prestados."
+          }
+        
 
-        const response = await api.post('/v2/cob', dataCob)
+        const response = await api.post('/v2/cob', dataCob).catch()       
         const qrcode = await api.get(`/v2/loc/${response.data.loc.id}/qrcode`)
+        
         return {
             qrcode, response
         }

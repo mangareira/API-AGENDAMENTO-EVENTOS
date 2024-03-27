@@ -2,7 +2,7 @@ export class Payment {
     constructor(
         public status: string,
         public txid: any,
-        public valor: number,
+        public valor: string,
         public qrCode: any
     ) {}
 }
