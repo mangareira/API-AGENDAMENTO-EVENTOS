@@ -15,7 +15,11 @@ const userSchema = new mongoose.Schema({
         txid: String,
         valor: String,
         qrCode: String,
-    }
+        pixCopiaECola: String,
+        expirationTime: String,
+    },
+    tickets: String,
+    discount: String
 
 });
 

@@ -88,16 +88,29 @@ export class EventUseCase {
 
         let user:any = {}        
 
-        const paymentPix =  await this.payment(paymentAmount)
-
-           
-        const verifyIsUserExists = await userRepository.veridyIsUserExists(participant.email)        
-        if (!verifyIsUserExists) {
-            participant.payment = {
-                 status: 'Pendente', 
-                 txid: paymentPix.response.data.txid, 
-                 valor: paymentAmount,
-                 qrCode:paymentPix.qrcode.data.imagemQrcode
+        
+        const verifyIsUserExists = await userRepository.veridyIsUserExists(participant.email)
+                
+        if (!verifyIsUserExists) {            
+            if(paymentAmount === '') {
+                participant.payment = {
+                        status: 'Gratis', 
+                        txid: '', 
+                        valor: '',
+                        qrCode:'',
+                        pixCopiaECola: '',
+                        expirationTime: ''
+                }
+            } else {
+                const paymentPix =  await this.payment(paymentAmount)
+                participant.payment = {
+                        status: 'Pendente', 
+                        txid: paymentPix.response.data.txid, 
+                        valor: paymentAmount,
+                        qrCode:paymentPix.qrcode.data.imagemQrcode,
+                        pixCopiaECola: paymentPix.response.data.pixCopiaECola,
+                        expirationTime: String(paymentPix.response.data.calendario.expiracao)
+                }
             }
             user = await userRepository.add(participant)            
             const userId = await userRepository.veridyIsUserExists(participant.email)  

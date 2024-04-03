@@ -77,10 +77,10 @@ export class EventController {
     }
     async addParticipant(req: Request, res: Response, next: NextFunction) {
         const { id } = req.params;
-        const { name, email, valor } = req.body;  
+        const { name, email, valor, tickets, discount } = req.body;          
         try {     
-            if (!name || !email || !valor || isNaN(valor)) {
-                throw new HttpException(400, 'Nome, e-mail e valor do pagamento são obrigatórios');
+            if (!name || !email ) {
+                throw new HttpException(400, 'Nome, e-mail do pagamento são obrigatórios');
             }
 
             const participant: User = {
@@ -89,9 +89,13 @@ export class EventController {
                 payment: {
                     status: 'Pendente',
                     txid: '',
-                    valor: Number(),
-                    qrCode: ''
-                }
+                    valor: '',
+                    qrCode: '',
+                    pixCopiaECola: '',
+                    expirationTime: ''
+                },
+                tickets,
+                discount
             };            
             const updatedEvent = await this.eventUseCase.addParticipant(id, participant, valor);
 
