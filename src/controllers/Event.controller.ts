@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { EventUseCase } from "../useCases/Event.usecase";
 import { Event } from "../entities/Events";
-import { API } from "../config";
 import { User } from "../entities/User";
 import { HttpException } from "../interface/HttpException";
+import { UserAccount } from "../entities/UserAccount";
 
 export class EventController {
     constructor(private eventUseCase: EventUseCase) {}
@@ -76,16 +76,13 @@ export class EventController {
         }
     }
     async addParticipant(req: Request, res: Response, next: NextFunction) {
-        const { id } = req.params;
-        const { name, email, valor, tickets, discount } = req.body;          
+        const { id, user_id } = req.params;
+        const { valor, tickets, discount } = req.body;          
         try {     
-            if (!name || !email ) {
-                throw new HttpException(400, 'Nome, e-mail do pagamento são obrigatórios');
-            }
 
             const participant: User = {
-                name,
-                email,
+                eventId: id,
+                userId: user_id,
                 payment: {
                     status: 'Pendente',
                     txid: '',
@@ -136,6 +133,25 @@ export class EventController {
         try {
             const event = await this.eventUseCase.comfirmPayment(id)
             return res.status(200).json(event)
+        } catch (error) {
+            next(error)
+        }
+    }
+    async createUserAccount(req: Request, res: Response, next: NextFunction) {
+
+        const data:UserAccount = req.body
+        try {
+            await this.eventUseCase.CreateAccount(data)
+            return res.status(201).json({message: 'Usuario criado com sucesso'})
+        } catch (error) {
+            next(error)
+        }
+    }
+    async login(req: Request, res: Response, next: NextFunction) {
+        const {email, password} = req.body
+        try {
+            const result = await this.eventUseCase.login(email, password)
+            res.status(200).json(result)
         } catch (error) {
             next(error)
         }

@@ -6,6 +6,10 @@ import { UserRepositoryMongoose } from "../repositories/User/UserRepositoryMongo
 import { IFilterProps } from "../interface/IFilter";
 import { API } from "../config";
 import { User } from "../entities/User";
+import { UserAccountRepositoryMongoose } from "../repositories/UserAccount/UserAccountRepositorymoongose";
+import { UserAccount } from "../entities/UserAccount";
+import { compare, hash } from "bcrypt";
+import { sign } from "jsonwebtoken";
 export class EventUseCase {
     constructor(private eventRepository: EventRepository) {}
     
@@ -77,55 +81,53 @@ export class EventUseCase {
     }
 
     async addParticipant(id: string, participant: User, paymentAmount: string) {
-
+        const userAccountRepository = new UserAccountRepositoryMongoose()
+        const userRepository = new UserRepositoryMongoose()
         const event = await this.eventRepository.findEventsById(id)
-
+        const userAccount = await userAccountRepository.findUserById(participant.userId)
         if(!event) {
             throw  new HttpException(400, 'Event not found')
         }
-
-        const userRepository = new UserRepositoryMongoose()
-
-        let user:any = {}        
-
-        
-        const verifyIsUserExists = await userRepository.veridyIsUserExists(participant.email)
-                
-        if (!verifyIsUserExists) {            
-            if(paymentAmount === '') {
-                participant.payment = {
-                        status: 'Gratis', 
-                        txid: '', 
-                        valor: '',
-                        qrCode:'',
-                        pixCopiaECola: '',
-                        expirationTime: ''
-                }
-            } else {
-                const paymentPix =  await this.payment(paymentAmount)
-                participant.payment = {
-                        status: 'Pendente', 
-                        txid: paymentPix.response.data.txid, 
-                        valor: paymentAmount,
-                        qrCode:paymentPix.qrcode.data.imagemQrcode,
-                        pixCopiaECola: paymentPix.response.data.pixCopiaECola,
-                        expirationTime: String(paymentPix.response.data.calendario.expiracao)
-                }
+        if(!userAccount) {
+            throw  new HttpException(400, 'User not found')
+        }
+        let user:any = {}                        
+        if(paymentAmount === '') {
+            participant.payment = {
+                    status: 'Gratis', 
+                    txid: '', 
+                    valor: '',
+                    qrCode:'',
+                    pixCopiaECola: '',
+                    expirationTime: ''
             }
-            user = await userRepository.add(participant)            
-            const userId = await userRepository.veridyIsUserExists(participant.email)  
-            user = userId      
         } else {
-            user = verifyIsUserExists            
-        }        
-        if (!event.participants.includes(user._id)) {
-            event.participants.push(user._id);
-        } else {
-            throw new HttpException(400, 'Usuário já está inscrito no evento');
-        } 
+            const paymentPix =  await this.payment(paymentAmount)
+            participant.payment = {
+                    status: 'Pendente', 
+                    txid: paymentPix.response.data.txid, 
+                    valor: paymentAmount,
+                    qrCode:paymentPix.qrcode.data.imagemQrcode,
+                    pixCopiaECola: paymentPix.response.data.pixCopiaECola,
+                    expirationTime: String(paymentPix.response.data.calendario.expiracao)
+            }
+        }
+        user = await userRepository.add(participant)            
+        if(event.participants.includes(user.userId)){
+            throw new HttpException(400, 'Usuario ja esta escrito no evento')
+        }
+        
+        const getPayment:any = await userRepository.findUser(user.userId) 
+        
+        if(!getPayment) throw new HttpException(400, "não existe este usuario")               
+        event.participants.push(user.userId)
+        userAccount.eventos.push(getPayment._id)
+        
+        const updateUser = await userAccountRepository.update(userAccount, user.userId)
         const updateEvent = await this.eventRepository.update(event, id)
-        return {participantId: user._id}
+        return {participantId: participant.userId}
     }
+
     async findEventsMain() {
         const events = await this.eventRepository.findEventsMain(new Date());
     
@@ -164,6 +166,38 @@ export class EventUseCase {
 
     }
 
+    async CreateAccount(userAccount: UserAccount) {
+        if (!userAccount.name) {
+            throw new HttpException(400, 'Name is required');
+          }
+        if (!userAccount.email) throw new HttpException(400, 'Email is required');
+        if (!userAccount.cpf) throw new HttpException(400, 'Cpf is required');
+        if (!userAccount.password) throw new HttpException(400, 'Password is required');
+        const userAccountRepository = new UserAccountRepositoryMongoose()
+        const verifyIsUserExists = await userAccountRepository.findUser(userAccount.email)
+        if(verifyIsUserExists) {
+            throw new HttpException(400, 'User already Exists')
+        }
+        const passwordCrypted = await hash(userAccount.password, 10)
+        const cpfCrypted = await hash(userAccount.cpf, 10)
+        const result = await userAccountRepository.add({...userAccount, password: passwordCrypted, cpf: cpfCrypted})
+        return result
+    }
+
+    async login(email: string, password:string) {
+        const userAccountRepository = new UserAccountRepositoryMongoose()
+        const user:any = await userAccountRepository.findUser(email)
+        if(!user) {
+            throw new HttpException(400, 'usuario não existe')
+        }
+        const isValue = await compare(password, user.password)        
+        if(isValue === false) {
+            throw new HttpException(400, 'Senha incorreta')
+        }
+        const tokens = await this.token(user._id)
+        return tokens
+    }
+
 
     private async getCityNameCoordinates(latitude: string, longitude: string) {
 
@@ -189,6 +223,7 @@ export class EventUseCase {
         }
         
     }
+
     private calculteDistance( lat1: number, lon1: number, lat2: number, lon2: number ): number {
         const R = 6371
         const dLat = this.deg2rad(lat2-lat1)
@@ -203,9 +238,11 @@ export class EventUseCase {
         const d = R * c
         return d
     }
+
     private deg2rad(deg: number) {
         return deg * (Math.PI / 180)
     }
+
     private async payment(valor: string) {
         
         const api =  await API({
@@ -229,6 +266,19 @@ export class EventUseCase {
         
         return {
             qrcode, response
+        }
+    }
+
+    private async token(id: string) {
+        const secret = process.env.TOKEN_SECRET_KEY
+        if(!secret) {
+            throw new HttpException(400, 'Key is not provider')
+        }
+        const token = sign({userId: id}, secret, {expiresIn: '1h'})
+        const refreshToken = sign({userId: id}, secret, {expiresIn: '7d'})
+        return {
+            access_token: token,
+            access_refresh_token:refreshToken
         }
     }
 }
