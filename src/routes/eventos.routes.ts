@@ -3,6 +3,7 @@ import { EventRepositoryMongoose } from "../repositories/Event/EventRepositoryMo
 import { EventController } from "../controllers/Event.controller";
 import { EventUseCase } from "../useCases/Event.usecase";
 import { upload } from "../infra/upload/multer";
+import { authMiddleware } from "../middleware/auth.middleware";
 
 export class EventRoutes {
     public router: Router
@@ -15,7 +16,7 @@ export class EventRoutes {
         this.initRoutes()
     }
     initRoutes() {
-        this.router.post('/',upload.fields([{
+        this.router.post('/',authMiddleware,upload.fields([{
                     name: 'banner',
                     maxCount: 1
                 },
@@ -26,13 +27,13 @@ export class EventRoutes {
             ]), this.eventController.create.bind(this.eventController)
         )
         this.router.get('/name', this.eventController.findEventsByName.bind(this.eventController))
-        this.router.get('/', this.eventController.findEventByLocation.bind(this.eventController))
+        this.router.get('/',authMiddleware, this.eventController.findEventByLocation.bind(this.eventController))
         this.router.get('/main', this.eventController.findMainEvents.bind(this.eventController));
-        this.router.get('/filter', this.eventController.filterEvents.bind(this.eventController))
-        this.router.get('/:id', this.eventController.findEventsById.bind(this.eventController))
-        this.router.get('/category/:category', this.eventController.findEventsByCategory.bind(this.eventController))
-        this.router.get('/findparticipants/:id', this.eventController.confirmPayment.bind(this.eventController))
-        this.router.post('/:id/:user_id/participants', this.eventController.addParticipant.bind(this.eventController))
+        this.router.get('/filter', authMiddleware,this.eventController.filterEvents.bind(this.eventController))
+        this.router.get('/:id',authMiddleware, this.eventController.findEventsById.bind(this.eventController))
+        this.router.get('/category/:category',authMiddleware, this.eventController.findEventsByCategory.bind(this.eventController))
+        this.router.get('/findparticipants/:id',authMiddleware, this.eventController.confirmPayment.bind(this.eventController))
+        this.router.post('/:id/:user_id/participants',authMiddleware, this.eventController.addParticipant.bind(this.eventController))
         this.router.post('/create-account', this.eventController.createUserAccount.bind(this.eventController))
         this.router.post('/login', this.eventController.login.bind(this.eventController))
     }
