@@ -156,4 +156,16 @@ export class EventController {
             next(error)
         }
     }
+    async refreshToken(req: Request, res: Response, next: NextFunction) {
+        const refreshToken = req.headers.authorization
+        if(!refreshToken) {
+            throw new HttpException(400, 'Refresh token is missign')
+        }
+        try {
+            const token = await this.eventUseCase.refreshToken(refreshToken)
+            return res.status(200).json(token)
+        } catch (error) {
+            next(error)
+        }
+    }
 }

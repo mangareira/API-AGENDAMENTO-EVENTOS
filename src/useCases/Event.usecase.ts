@@ -9,7 +9,7 @@ import { User } from "../entities/User";
 import { UserAccountRepositoryMongoose } from "../repositories/UserAccount/UserAccountRepositorymoongose";
 import { UserAccount } from "../entities/UserAccount";
 import { compare, hash } from "bcrypt";
-import { sign } from "jsonwebtoken";
+import { sign, verify } from "jsonwebtoken";
 export class EventUseCase {
     constructor(private eventRepository: EventRepository) {}
     
@@ -196,6 +196,21 @@ export class EventUseCase {
         }
         const tokens = await this.token(user._id)
         return tokens
+    }
+
+    async refreshToken(refreshToken: string) {
+        const secret = process.env.TOKEN_SECRET_KEY
+        const [, token] = refreshToken.split(" ")
+        if(!secret) {
+            throw new HttpException(400, 'Key is not provider')
+        }
+        const {userId}:any = verify(token, secret)
+        const newToken = sign({userId}, secret, {expiresIn: '1h'})
+        const newRefreshToken = sign({userId}, secret, {expiresIn: '7d'})
+        return {
+            access_token: newToken,
+            access_refresh_token: newRefreshToken
+        }
     }
 
 

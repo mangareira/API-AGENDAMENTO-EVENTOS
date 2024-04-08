@@ -36,5 +36,6 @@ export class EventRoutes {
         this.router.post('/:id/:user_id/participants',authMiddleware, this.eventController.addParticipant.bind(this.eventController))
         this.router.post('/create-account', this.eventController.createUserAccount.bind(this.eventController))
         this.router.post('/login', this.eventController.login.bind(this.eventController))
+        this.router.post('/refresh-token',authMiddleware, this.eventController.refreshToken.bind(this.eventController))
     }
 }

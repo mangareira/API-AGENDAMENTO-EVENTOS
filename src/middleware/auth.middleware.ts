@@ -14,11 +14,11 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
         const [, token] = authHeader.split(' ')
 
     try {
-        let secretKey: string | undefined = process.env.TOKEN_SECRET_KEY
+        const secretKey = process.env.TOKEN_SECRET_KEY
         if (!secretKey) {
-            throw new Error('No secret key')
+            throw new HttpException(400,'No secret key')
         }
-        const {userId} =  verify(token, secretKey ) as IPayload
+        verify(token, secretKey ) as IPayload
         
         return next()
     } catch (error) {
