@@ -91,6 +91,10 @@ export class EventUseCase {
         if(!userAccount) {
             throw  new HttpException(400, 'User not found')
         }
+        const user_id:any = participant.userId
+        if(event.participants.includes(user_id)){
+            throw new HttpException(400, 'Usuario ja esta escrito no evento')
+        }
         let user:any = {}                        
         if(paymentAmount === '') {
             participant.payment = {
@@ -113,9 +117,6 @@ export class EventUseCase {
             }
         }
         user = await userRepository.add(participant)            
-        if(event.participants.includes(user.userId)){
-            throw new HttpException(400, 'Usuario ja esta escrito no evento')
-        }
         
         const getPayment:any = await userRepository.findUser(user.userId) 
         
@@ -161,7 +162,7 @@ export class EventUseCase {
         if(findParticipant) {
             return findParticipant
         } else {
-            throw new HttpException(400, 'Usuario não existe')
+            throw new HttpException(400, 'O usuario não esta escrito em nenhum evento')
         }
 
     }
@@ -293,7 +294,8 @@ export class EventUseCase {
         const refreshToken = sign({userId: id}, secret, {expiresIn: '7d'})
         return {
             access_token: token,
-            access_refresh_token:refreshToken
+            access_refresh_token:refreshToken,
+            user_id: id
         }
     }
 }

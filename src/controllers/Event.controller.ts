@@ -10,14 +10,14 @@ export class EventController {
     async create(req: Request, res: Response, next: NextFunction) {
         let eventData: Event = req.body
         
-        const files = req.files as any        
+        const files = req.files as any 
         if (files) {
-            const banner = files.banner[0];
-            const flyers = files.flyers;
-      
+            const banner = files.banner?.[0]; // Access banner only if files exist
+            const flyers = files.flyers || []; // Use an empty array if flyers are missing
+        
             eventData = {
               ...eventData,
-              banner: banner.filename,
+              banner: banner?.filename, // Access filename only if banner exists
               flyers: flyers.map((flyer: any) => flyer.filename),
             };
         }

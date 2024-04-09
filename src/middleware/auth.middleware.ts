@@ -5,14 +5,13 @@ import { IPayload } from "../interface/IPayload";
 
 export async function authMiddleware(req: Request, res: Response, next: NextFunction,) {
     const authHeader = req.headers.authorization
-        if (!authHeader) {
-            return res.status(401).json({
-                code: 'token.missing',
-                message: " token missing"
-            })
-        }
-        const [, token] = authHeader.split(' ')
-
+    if (!authHeader) {
+        return res.status(401).json({
+            message: "Unauthorized"
+        })
+    }
+    const [, token] = authHeader.split(' ')  
+    
     try {
         const secretKey = process.env.TOKEN_SECRET_KEY
         if (!secretKey) {
