@@ -206,7 +206,7 @@ export class EventUseCase {
             throw new HttpException(400, 'Key is not provider')
         }
         const {userId}:any = verify(token, secret)
-        const newToken = sign({userId}, secret, {expiresIn: '1h'})
+        const newToken = sign({userId}, secret, {expiresIn: '1d'})
         const newRefreshToken = sign({userId}, secret, {expiresIn: '7d'})
         return {
             access_token: newToken,
@@ -290,7 +290,7 @@ export class EventUseCase {
         if(!secret) {
             throw new HttpException(400, 'Key is not provider')
         }
-        const token = sign({userId: id}, secret, {expiresIn: '1h'})
+        const token = sign({userId: id}, secret, {expiresIn: '1d'})
         const refreshToken = sign({userId: id}, secret, {expiresIn: '7d'})
         return {
             access_token: token,

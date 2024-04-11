@@ -4,12 +4,7 @@ import { verify } from "jsonwebtoken";
 import { IPayload } from "../interface/IPayload";
 
 export async function authMiddleware(req: Request, res: Response, next: NextFunction,) {
-    const authHeader = req.headers.authorization
-    if (!authHeader) {
-        return res.status(401).json({
-            message: "Unauthorized"
-        })
-    }
+    const authHeader:any = req.headers.authorization
     const [, token] = authHeader.split(' ')  
     
     try {
@@ -17,14 +12,22 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
         if (!secretKey) {
             throw new HttpException(400,'No secret key')
         }
-        verify(token, secretKey ) as IPayload
-        
+        const isVaule = verify(token, secretKey ) as IPayload        
         return next()
-    } catch (error) {
-        return res.status(401).json({
-            code: 'token.expired',
-            message: 'token expired'
-        })
+    } catch (error: any) {
+        //return res.status(401).json(error)
+        if(error.message == 'invalid signature') {
+            return res.status(401).json({
+                code: 'token.unauthorized',
+                message: 'Unauthorized'
+            })
+        }
+        if(error.message == 'jwt expired') {
+            return res.status(401).json({
+                code: 'token.expired',
+                message: 'token expired'
+            })
+        }
     }
 
 }
