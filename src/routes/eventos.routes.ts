@@ -27,11 +27,11 @@ export class EventRoutes {
             ]), this.eventController.create.bind(this.eventController)
         )
         this.router.get('/name', this.eventController.findEventsByName.bind(this.eventController))
-        this.router.get('/',authMiddleware, this.eventController.findEventByLocation.bind(this.eventController))
+        this.router.get('/', this.eventController.findEventByLocation.bind(this.eventController))
         this.router.get('/main', this.eventController.findMainEvents.bind(this.eventController));
         this.router.get('/filter', authMiddleware,this.eventController.filterEvents.bind(this.eventController))
         this.router.get('/:id',authMiddleware, this.eventController.findEventsById.bind(this.eventController))
-        this.router.get('/category/:category',authMiddleware, this.eventController.findEventsByCategory.bind(this.eventController))
+        this.router.get('/category/:category', this.eventController.findEventsByCategory.bind(this.eventController))
         this.router.get('/findparticipants/:id',authMiddleware, this.eventController.confirmPayment.bind(this.eventController))
         this.router.post('/:id/:user_id/participants',authMiddleware, this.eventController.addParticipant.bind(this.eventController))
         this.router.post('/create-account', this.eventController.createUserAccount.bind(this.eventController))
