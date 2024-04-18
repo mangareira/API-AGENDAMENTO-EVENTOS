@@ -5,5 +5,5 @@ export interface IFilterProps {
     date: string;
     category: string;
     radius: number;
-    price: number;
+    //price: number;
   }

@@ -111,7 +111,7 @@ export class EventController {
         }
     }
     async filterEvents(req: Request, res: Response, next: NextFunction) {
-        const { latitude, longitude, name, date, category, radius, price } = req.query          
+        const { latitude, longitude, name, date, category, radius } = req.query                  
         try {
             const events = await this.eventUseCase.filterEvents({
                 latitude: Number(latitude),
@@ -120,7 +120,7 @@ export class EventController {
                 date: String(date),
                 category: String(category),
                 radius: Number(radius),
-                price: Number(price),
+                //price: Number(price),
               })              
             return res.status(200).json(events)
         } catch (error) {

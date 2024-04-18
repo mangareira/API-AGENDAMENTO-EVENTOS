@@ -142,7 +142,7 @@ export class EventUseCase {
         date,
         category,
         radius,
-        price,
+        //price,
       }: IFilterProps) {
         const events = await this.eventRepository.findEventsByFilter({
             latitude,
@@ -151,8 +151,8 @@ export class EventUseCase {
             date,
             category,
             radius,
-            price,
-          })
+            //price,
+          })                    
         return events
     }
 
