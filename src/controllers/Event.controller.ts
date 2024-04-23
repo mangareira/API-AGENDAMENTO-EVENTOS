@@ -168,4 +168,9 @@ export class EventController {
             next(error)
         }
     }
+    async webhook(req: Request, res: Response, next: NextFunction) {
+        const data = req.body
+        console.log(data);
+        res.status(200)
+    }
 }
