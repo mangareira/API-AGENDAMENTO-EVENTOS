@@ -173,4 +173,13 @@ export class EventController {
         console.log(data);
         res.status(200)
     }
+    async getUser(req: Request, res: Response, next: NextFunction) {
+        const {id} = req.params
+        try {
+            const result = await this.eventUseCase.getUser(id)
+            return res.status(200).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
 }

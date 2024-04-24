@@ -214,6 +214,13 @@ export class EventUseCase {
         }
     }
 
+    async getUser (id: string) {                        
+        const userAccountRepository = new UserAccountRepositoryMongoose()
+        const user = await userAccountRepository.findUserById(id)
+        if(!user) throw new HttpException(400, "user mo exists")
+        return user.role
+    }
+
 
     private async getCityNameCoordinates(latitude: string, longitude: string) {
 

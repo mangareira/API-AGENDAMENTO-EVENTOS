@@ -6,6 +6,7 @@ export class UserAccount {
         public email: string,
         public cpf: string,
         public password: string,
-        public eventos: string[]
+        public eventos: string[],
+        public role: string
     ) {}
 }

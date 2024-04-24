@@ -17,6 +17,10 @@ const userAccountSchema = new mongoose.Schema({
     eventos: {
         type: Array,
         ref: 'UserEvents'
+    },
+    role: {
+        type: String,
+        default: "participant"
     }
 });
 
