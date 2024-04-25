@@ -4,10 +4,11 @@ import { errorMiddleware } from "./middleware/error.middleware"
 import { EventRoutes } from "./routes/eventos.routes"
 import cors from 'cors'
 import path from 'path'
-
+import https from 'https'
 
 export class App{
     public app: Application
+    public httpsServer: any
     private eventRoutes = new EventRoutes()
     constructor() {
         this.app = express()

@@ -170,8 +170,12 @@ export class EventController {
     }
     async webhook(req: Request, res: Response, next: NextFunction) {
         const data = req.body
-        console.log(data);
-        res.status(200)
+        try {
+            const result = await this.eventUseCase.webhook(data)
+            return res.status(200).end()
+        } catch (error) {
+            next(error)
+        }
     }
     async getUser(req: Request, res: Response, next: NextFunction) {
         const {id} = req.params
