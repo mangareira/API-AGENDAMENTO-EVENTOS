@@ -109,4 +109,8 @@ export class EventRepositoryMongoose implements EventRepository{
         const findEvent = await EventModel.find(query).exec()        
         return findEvent.map((event) => event.toObject())
     }
+    async findEventsByUserId(id: string): Promise<Event[]> {
+        const result = await EventModel.find({participants: id}).exec()
+        return result.map((event) => event.toObject())
+    }
 }

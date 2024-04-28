@@ -221,7 +221,17 @@ export class EventUseCase {
         return user.role
     }
 
+    async getPartDetails(id: string) {
+        const userRepository = new UserRepositoryMongoose()
+        const event = userRepository.findEvent(id)
+        if(!event) throw new HttpException(400, 'Usuario não existe')
+        return event
+    }
 
+    async getPartEvents(id: string) {
+        const event = await this.eventRepository.findEventsByUserId(id)
+        return event
+    }
     private async getCityNameCoordinates(latitude: string, longitude: string) {
 
         try {
