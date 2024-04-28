@@ -5,9 +5,9 @@ import { EventRoutes } from "./routes/eventos.routes"
 import cors from 'cors'
 import path from 'path'
 
-
 export class App{
     public app: Application
+    public httpsServer: any
     private eventRoutes = new EventRoutes()
     constructor() {
         this.app = express()

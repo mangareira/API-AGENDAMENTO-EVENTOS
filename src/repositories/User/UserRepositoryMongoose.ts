@@ -50,11 +50,26 @@ export class UserRepositoryMongoose implements UserRepository {
     }
     async findUser(id: string): Promise<User | undefined> {
         const lastPurchase = await UserModel.findOne({ userId: id })
-                .sort({ createdAt: -1 }) 
-                .limit(1)
-                .exec();
+        .sort({ createdAt: -1 }) // Ordenar por data de criação em ordem decrescente
+        .limit(1) // Limitar o resultado a 1
+        .exec();
+        
+        return lastPurchase ? lastPurchase.toObject() : undefined;
+    }
+    async findTxid(id: string): Promise<User | undefined> {
+        const user = await UserModel.findOne({ 'payment.txid': id }).exec();
 
-            return lastPurchase ? lastPurchase.toObject() : undefined;
+        if (!user) {
+            return undefined;
+        }
+
+        user.payment = {
+            status: 'Pago',
+            valor: user.payment?.valor
+        }
+        await user.save()
+        
+        return user ? user.toObject() : undefined;
     }
     async findEvent(id: string): Promise<IEventsPart[]> {
         const result = await UserModel.find({userId: id}).exec()
