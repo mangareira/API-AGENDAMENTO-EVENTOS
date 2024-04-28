@@ -221,7 +221,7 @@ export class EventUseCase {
         return user.role
     }
 
-    async webhook (data: any) {
+    async webhook (data: any) {        
         const userevent = new UserRepositoryMongoose()
         const result  = userevent.findTxid(data.pix[0].txid)
         return result
