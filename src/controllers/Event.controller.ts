@@ -197,8 +197,9 @@ export class EventController {
     }
     async getPartEvent(req: Request, res: Response, next: NextFunction) {
         const {id} = req.params
+        const {page, limit} = req.query                
         try {
-            const result = await this.eventUseCase.getPartEvents(id)
+            const result = await this.eventUseCase.getPartEvents(id, Number(page), Number(limit))
             return res.status(200).json(result)
         } catch (error) {
             next(error)
