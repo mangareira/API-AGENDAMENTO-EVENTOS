@@ -7,4 +7,5 @@ export interface UserRepository {
     findUser(id: string): Promise<User | undefined>
     findTxid(id: string): Promise<User | undefined>
     findEvent(id: string): Promise<IEventsPart[]>
+    findPay(id: string, userId: string): Promise<any>
 }

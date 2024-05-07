@@ -238,7 +238,13 @@ export class EventUseCase {
         const event = await this.eventRepository.findEventsByUserId(id, page, limit)
         return event
     }
-    
+
+    async getEventPay(id: string, userId: any) {
+        const userRepository = new UserRepositoryMongoose()
+        const findPay = userRepository.findPay(id, userId)
+        return findPay
+         
+    }
     private async getCityNameCoordinates(latitude: string, longitude: string) {
 
         try {

@@ -37,7 +37,7 @@ const userEventsSchema = new mongoose.Schema({
 const UserModel = mongoose.model('UserEvents', userEventsSchema);
 
 export class UserRepositoryMongoose implements UserRepository {
-   
+    
     async add(user: User): Promise<User> {
         const userModel = new UserModel(user);
         await userModel.save();
@@ -58,11 +58,11 @@ export class UserRepositoryMongoose implements UserRepository {
     }
     async findTxid(id: string): Promise<User | undefined> {
         const user = await UserModel.findOne({ 'payment.txid': id }).exec();
-
+        
         if (!user) {
             return undefined;
         }
-
+        
         user.payment = {
             status: 'Pago',
             valor: user.payment?.valor
@@ -74,5 +74,9 @@ export class UserRepositoryMongoose implements UserRepository {
     async findEvent(id: string): Promise<IEventsPart[]> {
         const result = await UserModel.find({userId: id}).exec()
         return result.map((event) => event.toObject())
+    }
+    async findPay(id: string, userId: string): Promise<any> {
+        const result = await UserModel.findOne({eventId: id, userId}).exec()
+        return result ? result.toObject() : undefined;
     }
 }

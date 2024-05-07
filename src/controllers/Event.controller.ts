@@ -205,4 +205,14 @@ export class EventController {
             next(error)
         }
     }
+    async getEventPay(req: Request, res: Response, next: NextFunction) {
+        const {userId} = req.query
+        const {id} = req.params        
+        try {
+            const result = await this.eventUseCase.getEventPay(id, userId)
+            return res.status(200).json(result)
+        } catch (error) {
+            next(error)
+        }    
+    }
 }
