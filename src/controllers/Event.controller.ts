@@ -215,4 +215,22 @@ export class EventController {
             next(error)
         }    
     }
+    async newPix(req: Request, res: Response, next: NextFunction) {
+        const {txid} = req.params
+        try {
+            const result = await this.eventUseCase.newPix(txid)            
+            return res.status(200).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
+    async getPayNewPix(req: Request, res: Response, next: NextFunction) {
+        const {txid} = req.params
+        try {
+            const result = await this.eventUseCase.getPay(txid)
+            return res.status(200).json(result)
+        } catch (error) {
+            next(error)
+        }        
+    }
 }

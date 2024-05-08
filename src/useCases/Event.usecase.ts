@@ -98,7 +98,7 @@ export class EventUseCase {
         let user:any = {}                        
         if(paymentAmount === '') {
             participant.payment = {
-                    status: 'Gratis', 
+                    status: 'gratis', 
                     txid: '', 
                     valor: '',
                     qrCode:'',
@@ -244,6 +244,22 @@ export class EventUseCase {
         const findPay = userRepository.findPay(id, userId)
         return findPay
          
+    }
+
+    async newPix(txid: string) {
+        const userRepository = new UserRepositoryMongoose()
+        const isExists = await userRepository.findPayByTxid(txid)
+        if(!isExists) throw new HttpException(400, 'This payment not exists')
+        const newPix  = await this.payment(isExists.payment.valor)
+        const update = await userRepository.updateUser(newPix.response.data, newPix.qrcode.data.imagemQrcode,txid)
+        return update
+        
+    }
+
+    async getPay(txid: string) {
+        const userRepository = new UserRepositoryMongoose()
+        const isExists = userRepository.findPayByTxid(txid)
+        return isExists
     }
     private async getCityNameCoordinates(latitude: string, longitude: string) {
 
