@@ -21,6 +21,10 @@ const userAccountSchema = new mongoose.Schema({
     role: {
         type: String,
         default: "participant"
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
     }
 });
 
@@ -43,5 +47,10 @@ export class UserAccountRepositoryMongoose implements UserAccountRepository {
     async update(user: UserAccount, userId: string): Promise<any> {
         const updateUser = await UserAccountModel.updateMany({_id: userId}, user,)
         return user
+    }
+    async findUsers(q?: string | any): Promise<UserAccount[]> {
+        const regex = new RegExp(q, "i")
+        const result = await UserAccountModel.find({name : {$regex: regex }}).limit(10).exec()         
+        return result.map((event) => event.toObject())
     }
 }

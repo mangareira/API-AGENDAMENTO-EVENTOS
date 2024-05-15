@@ -180,8 +180,7 @@ export class EventUseCase {
             throw new HttpException(400, 'User already Exists')
         }
         const passwordCrypted = await hash(userAccount.password, 10)
-        const cpfCrypted = await hash(userAccount.cpf, 10)
-        const result = await userAccountRepository.add({...userAccount, password: passwordCrypted, cpf: cpfCrypted})
+        const result = await userAccountRepository.add({...userAccount, password: passwordCrypted})
         return result
     }
 
@@ -214,7 +213,7 @@ export class EventUseCase {
         }
     }
 
-    async getUser (id: string) {                        
+    async getUserRole (id: string) {                        
         const userAccountRepository = new UserAccountRepositoryMongoose()
         const user = await userAccountRepository.findUserById(id)
         if(!user) throw new HttpException(400, "user mo exists")
@@ -261,6 +260,20 @@ export class EventUseCase {
         const isExists = userRepository.findPayByTxid(txid)
         return isExists
     }
+
+    async getParticipants(q?: string) {
+        const userAccountRepository = new UserAccountRepositoryMongoose()
+        const result = await userAccountRepository.findUsers(q)
+        return result
+    }
+
+    async getParticipant(id: string) {
+        const userAccountRepository = new UserAccountRepositoryMongoose()
+        const user = await userAccountRepository.findUserById(id)
+        if(!user) throw new HttpException(400, "User not exists")
+        return user
+    }
+
     private async getCityNameCoordinates(latitude: string, longitude: string) {
 
         try {

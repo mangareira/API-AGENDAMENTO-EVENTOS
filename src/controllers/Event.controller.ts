@@ -177,10 +177,10 @@ export class EventController {
             next(error)
         }
     }
-    async getUser(req: Request, res: Response, next: NextFunction) {
+    async getUserRole(req: Request, res: Response, next: NextFunction) {
         const {id} = req.params
         try {
-            const result = await this.eventUseCase.getUser(id)
+            const result = await this.eventUseCase.getUserRole(id)
             return res.status(200).json(result)
         } catch (error) {
             next(error)
@@ -232,5 +232,23 @@ export class EventController {
         } catch (error) {
             next(error)
         }        
+    }
+    async getParticipants(req: Request, res: Response, next: NextFunction) {
+        const {q}:any = req.query
+        try {
+            const result  = await this.eventUseCase.getParticipants(q)
+            res.status(200).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
+    async getParticipant(req: Request, res: Response, next: NextFunction) {
+        const {id} = req.params
+        try {
+            const result = await this.eventUseCase.getParticipant(id)
+            res.status(200).json(result)
+        } catch (error) {
+            next(error)
+        }
     }
 }
