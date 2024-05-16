@@ -261,9 +261,9 @@ export class EventUseCase {
         return isExists
     }
 
-    async getParticipants(q?: string) {
+    async getParticipants(q?: string, page?: number) {
         const userAccountRepository = new UserAccountRepositoryMongoose()
-        const result = await userAccountRepository.findUsers(q)
+        const result = await userAccountRepository.findUsers(q, page)
         return result
     }
 

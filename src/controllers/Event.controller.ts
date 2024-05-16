@@ -234,9 +234,9 @@ export class EventController {
         }        
     }
     async getParticipants(req: Request, res: Response, next: NextFunction) {
-        const {q}:any = req.query
+        const {q, page}:any = req.query
         try {
-            const result  = await this.eventUseCase.getParticipants(q)
+            const result  = await this.eventUseCase.getParticipants(q, Number(page))
             res.status(200).json(result)
         } catch (error) {
             next(error)
