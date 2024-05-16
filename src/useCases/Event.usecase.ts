@@ -274,6 +274,11 @@ export class EventUseCase {
         return user
     }
 
+    async findEvents(q?: string, page?: number) {
+        const result = await this.eventRepository.findEvents(q, page)
+        return result
+    }
+
     private async getCityNameCoordinates(latitude: string, longitude: string) {
 
         try {

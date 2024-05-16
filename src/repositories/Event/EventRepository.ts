@@ -12,5 +12,6 @@ export interface EventRepository {
     findEventsById(id: string): Promise<Event | undefined>
     findEventsByFilter(data: IFilterProps): Promise<Event[]>
     findEventsByUserId(id: string, page: number, limit: number): Promise<Event[]>
+    findEvents(q?: string, page?: number): Promise<Event[]>
     update(event: Event, id: string): Promise<any>
 }

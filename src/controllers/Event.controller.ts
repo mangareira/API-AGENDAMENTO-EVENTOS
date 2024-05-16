@@ -251,4 +251,13 @@ export class EventController {
             next(error)
         }
     }
+    async findEvents(req: Request, res: Response, next: NextFunction) {
+        const {q, page}: any = req.query
+        try {
+            const result = await this.eventUseCase.findEvents(q, Number(page))
+            res.status(200).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
 }
