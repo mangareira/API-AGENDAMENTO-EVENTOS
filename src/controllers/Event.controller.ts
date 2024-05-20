@@ -260,4 +260,23 @@ export class EventController {
             next(error)
         }
     }
+    async deleteUser(req: Request, res: Response, next: NextFunction) {
+        const {id} = req.query
+        try {
+            await this.eventUseCase.deleteUser(String(id))
+            res.status(200).json()
+        } catch (error) {
+            next(error)
+        }
+    }
+    async updateUser(req: Request, res: Response, next: NextFunction) {
+        const {id} = req.params
+        const data: UserAccount = req.body
+        try {
+            const result = await this.eventUseCase.updateUser(data,id)
+            res.status(200).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
 }

@@ -50,9 +50,16 @@ export class UserAccountRepositoryMongoose implements UserAccountRepository {
     }
     async findUsers(q?: string | any, page?: number | any): Promise<UserAccount[] | any> {
         const regex = new RegExp(q, "i")
-        const itemPage = 10
+        const itemPage = 6
         const count = (await UserAccountModel.find({name : {$regex: regex }})).length
         const result = await UserAccountModel.find({name : {$regex: regex }}).limit(itemPage).skip(itemPage * (page-1)).exec()         
         return {users : result.map((event) => event.toObject()), count}
+    }
+    async delete(id:string):Promise<any> {
+        await UserAccountModel.findOneAndDelete({_id:id})
+    }
+    async updateUser(user: UserAccount, userId: string): Promise<UserAccount | undefined> {
+        const result = await UserAccountModel.findByIdAndUpdate(userId, user)
+        return result ? result.toObject() : undefined
     }
 }

@@ -8,7 +8,7 @@ import { API } from "../config";
 import { User } from "../entities/User";
 import { UserAccountRepositoryMongoose } from "../repositories/UserAccount/UserAccountRepositorymoongose";
 import { UserAccount } from "../entities/UserAccount";
-import { compare, hash } from "bcrypt";
+import { compare, hash} from "bcrypt";
 import { sign, verify } from "jsonwebtoken";
 export class EventUseCase {
     constructor(private eventRepository: EventRepository) {}
@@ -277,6 +277,19 @@ export class EventUseCase {
     async findEvents(q?: string, page?: number) {
         const result = await this.eventRepository.findEvents(q, page)
         return result
+    }
+
+    async deleteUser(id: string) {
+        const userAccountRepository = new UserAccountRepositoryMongoose()
+        const isDelete = await userAccountRepository.delete(id)
+        if(!isDelete) return new HttpException(400, "User not exists")
+    } 
+
+    async updateUser(user: UserAccount, userId: string) {
+        const userAccountRepository = new UserAccountRepositoryMongoose()
+        const isExists = await userAccountRepository.updateUser(user, userId)
+        if(!isExists) throw new HttpException(400, "User not Exists")
+        return isExists
     }
 
     private async getCityNameCoordinates(latitude: string, longitude: string) {
