@@ -48,6 +48,8 @@ export class EventRoutes {
         this.router.post('/refresh-token',authMiddleware, this.eventController.refreshToken.bind(this.eventController))
         this.router.post('/webhook(/pix)?', this.eventController.webhook.bind(this.eventController))
         this.router.put('/update-user/:id', this.eventController.updateUser.bind(this.eventController))
+        this.router.put('/update-event/:id', this.eventController.updateEvent.bind(this.eventController))
         this.router.delete('/delete-user', this.eventController.deleteUser.bind(this.eventController))
+        this.router.delete('/delete-event', this.eventController.deleteEvent.bind(this.eventController))
     }
 }

@@ -2,6 +2,7 @@ import mongoose from "mongoose"
 import { Event } from "../../entities/Events"
 import { EventRepository } from "./EventRepository"
 import { Location } from "../../entities/Location"
+import { randomUUID } from 'crypto';
 import { IFilterProps } from "../../interface/IFilter"
 
 const eventSchema = new mongoose.Schema({
@@ -122,5 +123,12 @@ export class EventRepositoryMongoose implements EventRepository{
         const result = await EventModel.find({title : {$regex: regex }}).limit(itemPage).skip(itemPage * (page-1)).exec()         
         return {users : result.map((event) => event.toObject()), count}
     }
-    
+    async updateEvent(event: Event, eventId: string): Promise<Event | undefined> {
+        const result  = await EventModel.findByIdAndUpdate(eventId, event)
+        return result ? result.toObject() : undefined
+    }
+    async delete(id: string): Promise<"Deletado"> {
+        await EventModel.findByIdAndDelete(id)
+        return "Deletado" 
+    }
 }

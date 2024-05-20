@@ -14,4 +14,6 @@ export interface EventRepository {
     findEventsByUserId(id: string, page: number, limit: number): Promise<Event[]>
     findEvents(q?: string, page?: number): Promise<Event[]>
     update(event: Event, id: string): Promise<any>
+    updateEvent(event: Event, eventId: string): Promise<Event | undefined> 
+    delete(id: string): Promise<"Deletado">
 }

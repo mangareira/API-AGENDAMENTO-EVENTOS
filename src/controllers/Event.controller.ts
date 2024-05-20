@@ -279,4 +279,23 @@ export class EventController {
             next(error)
         }
     }
+    async updateEvent(req: Request, res: Response, next: NextFunction) {
+        const {id} = req.params
+        const data = req.body
+        try {
+            const result =  await this.eventUseCase.updateEvent(data, id)
+            res.status(200).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
+    async deleteEvent(req: Request, res: Response, next: NextFunction) {
+        const {id} = req.params
+        try {
+            const result = await this.eventUseCase.deleteEvent(id)
+            res.status(200).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
 }

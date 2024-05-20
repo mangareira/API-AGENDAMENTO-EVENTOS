@@ -291,7 +291,17 @@ export class EventUseCase {
         if(!isExists) throw new HttpException(400, "User not Exists")
         return isExists
     }
+    
+    async updateEvent(events: Event, eventId: string) {
+        const isExists = await this.eventRepository.updateEvent(events, eventId)
+        if(!isExists) throw new HttpException(400, "Event not exists")
+        return isExists 
+    }
 
+    async deleteEvent(id: string) {
+        const result  = await this.eventRepository.delete(id)
+        return result
+    }
     private async getCityNameCoordinates(latitude: string, longitude: string) {
 
         try {
