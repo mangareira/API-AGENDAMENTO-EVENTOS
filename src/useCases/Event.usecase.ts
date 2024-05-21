@@ -302,6 +302,11 @@ export class EventUseCase {
         const result  = await this.eventRepository.delete(id)
         return result
     }
+    async getUserEvents(q?: string, page?: number,id?: string) {
+        const event = await this.eventRepository.findUserEvents(q,page, id)
+        return event
+    }
+
     private async getCityNameCoordinates(latitude: string, longitude: string) {
 
         try {

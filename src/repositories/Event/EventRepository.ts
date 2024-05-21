@@ -13,6 +13,7 @@ export interface EventRepository {
     findEventsByFilter(data: IFilterProps): Promise<Event[]>
     findEventsByUserId(id: string, page: number, limit: number): Promise<Event[]>
     findEvents(q?: string, page?: number): Promise<Event[]>
+    findUserEvents(q?: string | any, page?: number | any, id?: string): Promise<Event[] | any>
     update(event: Event, id: string): Promise<any>
     updateEvent(event: Event, eventId: string): Promise<Event | undefined> 
     delete(id: string): Promise<"Deletado">

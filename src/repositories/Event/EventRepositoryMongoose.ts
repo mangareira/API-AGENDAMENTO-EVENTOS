@@ -131,4 +131,11 @@ export class EventRepositoryMongoose implements EventRepository{
         await EventModel.findByIdAndDelete(id)
         return "Deletado" 
     }
+    async findUserEvents(q?: string | any, page?: number | any, id?: string): Promise<Event[] | any> {
+        const regex = new RegExp(q, "i")
+        const itemPage = 10
+        const result = await EventModel.find({participants: id,title : {$regex: regex }}).limit(itemPage).skip(itemPage * (page-1)).exec()
+        const count = (await EventModel.find({participants: id,title : {$regex: regex }})).length
+        return {events: result.map((event) => event.toObject()), count}
+    }
 }

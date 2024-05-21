@@ -39,6 +39,7 @@ export class EventRoutes {
         this.router.get('/get-participant-role/:id',authMiddleware, this.eventController.getUserRole.bind(this.eventController))
         this.router.get('/get-participant-details/:id',authMiddleware, this.eventController.getPartDetails.bind(this.eventController))
         this.router.get('/get-participant-events/:id',authMiddleware, this.eventController.getPartEvent.bind(this.eventController))
+        this.router.get('/get-user-events/:id',authMiddleware, this.eventController.getUserEvent.bind(this.eventController))
         this.router.get('/get-events-payment/:id',authMiddleware, this.eventController.getEventPay.bind(this.eventController))
         this.router.get('/get-pay/:txid',authMiddleware, this.eventController.getPayNewPix.bind(this.eventController))
         this.router.post('/new-pix/:txid',authMiddleware, this.eventController.newPix.bind(this.eventController))

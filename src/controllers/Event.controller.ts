@@ -298,4 +298,14 @@ export class EventController {
             next(error)
         }
     }
+    async getUserEvent(req: Request, res: Response, next: NextFunction) {
+        const {q, page}: any = req.query    
+        const {id} = req.params            
+        try {
+            const result = await this.eventUseCase.getUserEvents(q, Number(page),id)
+            return res.status(200).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
 }
