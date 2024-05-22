@@ -99,4 +99,9 @@ export class UserRepositoryMongoose implements UserRepository {
         await user.save()
         return user ? user.toObject() : undefined;
     }
+    async deletePay(eventId: string, userId: string): Promise<null> {
+        await UserModel.findOneAndDelete({eventId,userId})
+        return null
+    }
+    
 }

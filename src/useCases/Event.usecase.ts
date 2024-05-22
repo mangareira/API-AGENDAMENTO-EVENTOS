@@ -302,9 +302,25 @@ export class EventUseCase {
         const result  = await this.eventRepository.delete(id)
         return result
     }
+
     async getUserEvents(q?: string, page?: number,id?: string) {
         const event = await this.eventRepository.findUserEvents(q,page, id)
         return event
+    }
+
+    async cancelledSub(eventId: string | any, userId: string | any) {
+        const userAccountRepository = new UserAccountRepositoryMongoose()
+        const userRepository = new UserRepositoryMongoose()
+        const isExists = await userAccountRepository.findUserById(userId)
+        if(!isExists) throw new HttpException(400, "User not Exists")
+        const isEventExists = await this.eventRepository.findEventsById(eventId)
+        if(!isEventExists) throw new HttpException(400, "Event not exists")
+        const isExistsPay = await userRepository.findPay(eventId, userId)
+        if(!isExistsPay) throw new HttpException(400, "User is not subscribe in event")
+        const deleteEventFromUser = await userAccountRepository.deleteEvent(isExistsPay._id, userId)
+        const deletePay = await userRepository.deletePay(eventId, userId)
+        const deleteUserFromEvent = await this.eventRepository.deleteUser(userId, eventId)
+        return
     }
 
     private async getCityNameCoordinates(latitude: string, longitude: string) {

@@ -50,6 +50,7 @@ export class EventRoutes {
         this.router.post('/webhook(/pix)?', this.eventController.webhook.bind(this.eventController))
         this.router.put('/update-user/:id',authMiddleware, this.eventController.updateUser.bind(this.eventController))
         this.router.put('/update-event/:id',authMiddleware, this.eventController.updateEvent.bind(this.eventController))
+        this.router.put('/cancelled-sub',authMiddleware, this.eventController.cancelledSub.bind(this.eventController))
         this.router.delete('/delete-user',authMiddleware, this.eventController.deleteUser.bind(this.eventController))
         this.router.delete('/delete-event',authMiddleware, this.eventController.deleteEvent.bind(this.eventController))
     }

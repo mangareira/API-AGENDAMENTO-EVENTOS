@@ -62,4 +62,10 @@ export class UserAccountRepositoryMongoose implements UserAccountRepository {
         const result = await UserAccountModel.findByIdAndUpdate(userId, user)
         return result ? result.toObject() : undefined
     }
+    async deleteEvent(payId: string, userId: string): Promise<null> {
+        await UserAccountModel.findByIdAndUpdate(userId, {
+            $pull: { eventos: payId }
+        })
+        return null
+    }
 }

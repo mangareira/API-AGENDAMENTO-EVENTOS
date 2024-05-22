@@ -7,5 +7,6 @@ export interface UserAccountRepository {
     findUsers(q?: string | any, page?: number): Promise<UserAccount[]>
     update(user: UserAccount, userId: string): Promise<any>
     updateUser(user: UserAccount, userId: string): Promise<UserAccount | undefined>
+    deleteEvent(payId: string, userId: string): Promise<null>
     delete(id: string): Promise<any>
 }

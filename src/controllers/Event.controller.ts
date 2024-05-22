@@ -308,4 +308,13 @@ export class EventController {
             next(error)
         }
     }
+    async cancelledSub(req: Request, res: Response, next: NextFunction) {
+        const {eventId, userId} = req.query
+        try {
+            await this.eventUseCase.cancelledSub(eventId, userId)
+            res.status(200).json({message: "cancelled sucess"})
+        } catch (error) {
+            next(error)
+        }
+    }
 }
