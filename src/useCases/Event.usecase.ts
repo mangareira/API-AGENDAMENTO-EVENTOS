@@ -346,7 +346,7 @@ export class EventUseCase {
             users = users.filter(user => user.name.toLowerCase().includes(q.toLowerCase()));
         }
         const count = users.length;
-        const limit = 1
+        const limit = 6
         const startIndex = (page - 1) * limit;
         const endIndex = startIndex + limit;
         const paginatedUsers = users.slice(startIndex, endIndex);
