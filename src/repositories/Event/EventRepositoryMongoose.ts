@@ -27,8 +27,8 @@ const eventSchema = new mongoose.Schema({
     city: String,
     formattedAddress: String,
     participants: {
+        ref: 'User',
         type: Array,
-        ref: 'User'
     }
 })
 
@@ -144,6 +144,5 @@ export class EventRepositoryMongoose implements EventRepository{
         });
         return result;
     }
-    
     
 }

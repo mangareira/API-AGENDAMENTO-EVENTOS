@@ -33,6 +33,7 @@ export class EventRoutes {
         this.router.get('/category/:category', this.eventController.findEventsByCategory.bind(this.eventController))
         this.router.get('/get-events/:id', this.eventController.findEventsById.bind(this.eventController))
         this.router.get('/get-events/',authMiddleware, this.eventController.findEvents.bind(this.eventController))
+        this.router.get('/get-events-participants/:id',authMiddleware, this.eventController.findEventsUsers.bind(this.eventController))
         this.router.get('/get-participants',authMiddleware, this.eventController.getParticipants.bind(this.eventController))
         this.router.get('/get-participant/:id',authMiddleware, this.eventController.getParticipant.bind(this.eventController))
         this.router.get('/findparticipants/:id',authMiddleware, this.eventController.confirmPayment.bind(this.eventController))

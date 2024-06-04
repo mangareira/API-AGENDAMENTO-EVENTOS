@@ -323,6 +323,28 @@ export class EventUseCase {
         return
     }
 
+    async findEventsUsers(id: string) {
+        let users: any = []
+        const event = await this.eventRepository.findEventsById(id)
+        if (event && event.participants) {
+            await Promise.all(event.participants.map(async (userId) => {
+                const result = await this.findUserByIdInEvent(userId)
+                if(result) {
+                    const user: UserAccount = {
+                        name: result.name,
+                        email: result.email,
+                        eventos: result.eventos,
+                        role: result.role,
+                        _id: result._id,
+                        createdAt: result.createdAt
+                    }
+                    users.push(user)
+                }
+            }))
+        }
+        return users
+    }
+
     private async getCityNameCoordinates(latitude: string, longitude: string) {
 
         try {
@@ -405,5 +427,11 @@ export class EventUseCase {
             access_refresh_token:refreshToken,
             user_id: id
         }
+    }
+
+    private async findUserByIdInEvent(id: string) {
+        const userAccountRepository = new UserAccountRepositoryMongoose()
+        const user = await userAccountRepository.findUserById(id)
+        return user
     }
 }

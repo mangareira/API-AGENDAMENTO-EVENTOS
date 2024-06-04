@@ -9,7 +9,7 @@ export interface EventRepository {
     findEventsByCategory(category: string): Promise<Event[]>
     findEventsMain(date: Date): Promise<Event[]>
     findEventsByName(name: string): Promise<Event[]>;
-    findEventsById(id: string): Promise<Event | undefined>
+    findEventsById(id?: string): Promise<Event | undefined>
     findEventsByFilter(data: IFilterProps): Promise<Event[]>
     findEventsByUserId(id: string, page: number, limit: number): Promise<Event[]>
     findEvents(q?: string, page?: number): Promise<Event[]>
