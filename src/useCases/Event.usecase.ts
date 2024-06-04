@@ -323,8 +323,8 @@ export class EventUseCase {
         return
     }
 
-    async findEventsUsers(id: string) {
-        let users: any = []
+    async findEventsUsers(id: string,page: number, q?: string) {
+        let users: UserAccount[] = []
         const event = await this.eventRepository.findEventsById(id)
         if (event && event.participants) {
             await Promise.all(event.participants.map(async (userId) => {
@@ -342,7 +342,18 @@ export class EventUseCase {
                 }
             }))
         }
-        return users
+        if (q) {
+            users = users.filter(user => user.name.toLowerCase().includes(q.toLowerCase()));
+        }
+        const count = users.length;
+        const limit = 1
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedUsers = users.slice(startIndex, endIndex);
+        return {
+            users: paginatedUsers,
+            count
+        }
     }
 
     private async getCityNameCoordinates(latitude: string, longitude: string) {

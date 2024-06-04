@@ -318,9 +318,10 @@ export class EventController {
         }
     }
     async findEventsUsers(req: Request, res: Response, next: NextFunction) {
+        const {q, page}: any = req.query    
         const {id} = req.params            
         try {
-            const result = await this.eventUseCase.findEventsUsers(id)
+            const result = await this.eventUseCase.findEventsUsers(id,Number(page), q)
             return res.status(200).json(result)
         } catch (error) {
             next(error)
