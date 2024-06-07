@@ -356,6 +356,65 @@ export class EventUseCase {
         }
     }
 
+    async addPartWithEmail(email: string, eventId: string, tickets: string, discount: string) {
+        const userAccountRepository = new UserAccountRepositoryMongoose()
+        const userRepository = new UserRepositoryMongoose()
+        const event = await this.eventRepository.findEventsById(eventId)
+        const userAccount = await userAccountRepository.findUser(email)
+        if(!event) {
+            throw  new HttpException(400, 'Event not found')
+        }
+        if(!userAccount) {
+            throw  new HttpException(400, 'User not found')
+        }
+        const user_id:any = userAccount._id
+        if(event.participants.includes(user_id)){
+            throw new HttpException(400, 'Usuario ja esta escrito no evento')
+        }
+        let user:any = {}
+        let userPay:any = {}
+        userPay = {
+            tickets,
+            discount,
+            eventId,
+            userId: user_id
+        }                 
+        if(event.price[0].amount == "") {
+            userPay.payment = {
+                status: 'gratis', 
+                txid: '', 
+                valor: '',
+                qrCode:'',
+                pixCopiaECola: '',
+                expirationTime: ''
+            }
+        } else {
+            const separate = event.price[0].amount.split(",")
+            const money = separate[0] + '.' + separate[1]
+            const paymentPix =  await this.payment(money)
+            userPay.payment= {
+                    status: 'Pendente', 
+                    txid: paymentPix.response.data.txid, 
+                    valor: event.price[0].amount,
+                    qrCode:paymentPix.qrcode.data.imagemQrcode,
+                    pixCopiaECola: paymentPix.response.data.pixCopiaECola,
+                    expirationTime: String(paymentPix.response.data.calendario.expiracao)
+            }
+        }
+        
+        user = await userRepository.add(userPay)            
+        
+        const getPayment:any = await userRepository.findUser(user.userId) 
+        
+        if(!getPayment) throw new HttpException(400, "não existe este usuario")               
+        event.participants.push(user.userId)
+        userAccount.eventos.push(getPayment._id)
+        
+        const updateUser = await userAccountRepository.update(userAccount, user.userId)
+        const updateEvent = await this.eventRepository.update(event, eventId)
+
+    }
+
     private async getCityNameCoordinates(latitude: string, longitude: string) {
 
         try {

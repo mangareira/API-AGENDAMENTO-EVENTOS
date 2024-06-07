@@ -327,4 +327,13 @@ export class EventController {
             next(error)
         }
     }
+    async addPartWithEmail(req: Request, res: Response, next: NextFunction) {
+        const {email, eventId,tickets,discount}:any = req.query
+        try {
+            const result = await this.eventUseCase.addPartWithEmail(email,eventId,tickets,discount)
+            res.status(200).json({message: "Inscrição feita com successo"})
+        } catch (error) {
+            next(error)
+        }
+    }
 }
