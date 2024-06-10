@@ -99,8 +99,20 @@ export class UserRepositoryMongoose implements UserRepository {
         await user.save()
         return user ? user.toObject() : undefined;
     }
-    async deletePay(eventId: string, userId: string): Promise<null> {
-        await UserModel.findOneAndDelete({eventId,userId})
+    async deletePay(eventId: string, userId: string): Promise<User | null> {
+        const pay = await UserModel.findOne({eventId,userId}).exec()
+        if(!pay) {
+            return null
+        }
+        pay.payment = {
+            expirationTime: '',
+            pixCopiaECola: '',
+            qrCode: '',
+            status: "cancelled",
+            txid: '',
+            valor: pay.payment?.valor,
+        }
+        pay.save()
         return null
     }
     async getAllPay( p?:number | any): Promise<User[] | any> {

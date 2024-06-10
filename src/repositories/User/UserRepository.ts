@@ -11,5 +11,5 @@ export interface UserRepository {
     findPayByTxid(txid: string): Promise<User | undefined>
     getAllPay(p?:number): Promise<User[] | undefined>
     updateUser(data:any, qrCode:string, txid: string): Promise<User | undefined>
-    deletePay(eventId: string, userId: string): Promise<null>
+    deletePay(eventId: string, userId: string): Promise<User | null>
 }
