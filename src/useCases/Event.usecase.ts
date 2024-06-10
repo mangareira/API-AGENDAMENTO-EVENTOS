@@ -10,6 +10,7 @@ import { UserAccountRepositoryMongoose } from "../repositories/UserAccount/UserA
 import { UserAccount } from "../entities/UserAccount";
 import { compare, hash} from "bcrypt";
 import { sign, verify } from "jsonwebtoken";
+import { IPayment } from "../interface/IPayment";
 export class EventUseCase {
     constructor(private eventRepository: EventRepository) {}
     
@@ -413,6 +414,32 @@ export class EventUseCase {
         const updateUser = await userAccountRepository.update(userAccount, user.userId)
         const updateEvent = await this.eventRepository.update(event, eventId)
 
+    }
+
+    async getAllPay(p: number, q?: string | any) {
+        const userRepository = new UserRepositoryMongoose()
+        const userAccountRepository = new UserAccountRepositoryMongoose()
+        const result = await userRepository.getAllPay(p)
+        let payments:any = []
+        if (result && result.pays) {
+            await Promise.all(result.pays.map(async (data: User) => {
+                const user = await userAccountRepository.findUserById(data.userId)
+                const pay= {
+                    name: user?.name,
+                    status: data.payment.status,
+                    _id: data._id,
+                    value: data.payment.valor,
+                    userId: data.userId,
+                    createdAt: data.createdAt
+                }
+                payments.push(pay)
+            }))
+            payments.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            if(q) {
+                payments = payments.filter((payment: { name: string; }) => payment.name.toLowerCase().includes(q.toLowerCase()))
+            }
+        } 
+        return {payments, count: result.count}
     }
 
     private async getCityNameCoordinates(latitude: string, longitude: string) {

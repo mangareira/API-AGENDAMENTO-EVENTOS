@@ -103,5 +103,11 @@ export class UserRepositoryMongoose implements UserRepository {
         await UserModel.findOneAndDelete({eventId,userId})
         return null
     }
+    async getAllPay( p?:number | any): Promise<User[] | any> {
+        const itemPerP = 6
+        const result = await UserModel.find().limit(itemPerP).skip(itemPerP * (p-1)).sort('asc').exec()
+        const count =  (await UserModel.find().exec()).length
+        return {pays: result.map((pay) => pay.toObject()), count} 
+    }
     
 }

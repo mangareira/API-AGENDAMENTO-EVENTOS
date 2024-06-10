@@ -336,4 +336,13 @@ export class EventController {
             next(error)
         }
     }
+    async getAllPay(req: Request, res: Response, next: NextFunction) {
+        const {page,q} = req.query
+        try {
+            const result = await this.eventUseCase.getAllPay(Number(page),q)
+            res.status(200).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
 }

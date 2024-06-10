@@ -6,6 +6,8 @@ export class User{
         public userId: string,
         public payment: Payment,
         public tickets: string,
-        public discount: string
+        public discount: string,
+        public _id?: string,
+        public createdAt?: string
     ) {}
 }
