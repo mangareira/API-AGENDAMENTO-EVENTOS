@@ -1,4 +1,5 @@
 import { UserAccount } from "../../entities/UserAccount";
+import { IExport } from "../../interface/IExport";
 
 export interface UserAccountRepository {
     add(user: UserAccount): Promise<UserAccount>
@@ -9,4 +10,5 @@ export interface UserAccountRepository {
     updateUser(user: UserAccount, userId: string): Promise<UserAccount | undefined>
     deleteEvent(payId: string, userId: string): Promise<null>
     delete(id: string): Promise<any>
+    export(data: IExport): Promise<UserAccount[] | undefined>
 }

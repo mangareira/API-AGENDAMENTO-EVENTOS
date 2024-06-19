@@ -4,6 +4,7 @@ import { EventRepository } from "./EventRepository"
 import { Location } from "../../entities/Location"
 import { randomUUID } from 'crypto';
 import { IFilterProps } from "../../interface/IFilter"
+import { IExport } from "../../interface/IExport";
 
 const eventSchema = new mongoose.Schema({
     title: String,
@@ -144,5 +145,11 @@ export class EventRepositoryMongoose implements EventRepository{
         });
         return result;
     }
-    
+    async export (data: IExport): Promise<Event[] | undefined> {
+        const result =  await EventModel.find({date: {
+            $gte: new Date(data.startDate),
+            $lte: new Date(data.endDate)
+        }}).exec()
+        return result.map((users) => users.toObject())
+    }
 }

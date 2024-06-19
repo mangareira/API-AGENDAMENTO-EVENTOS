@@ -4,6 +4,8 @@ import { Event } from "../entities/Events";
 import { User } from "../entities/User";
 import { HttpException } from "../interface/HttpException";
 import { UserAccount } from "../entities/UserAccount";
+import { IExport } from "../interface/IExport";
+import fs from 'fs'
 
 export class EventController {
     constructor(private eventUseCase: EventUseCase) {}
@@ -343,6 +345,16 @@ export class EventController {
             res.status(200).json(result)
         } catch (error) {
             next(error)
+        }
+    }
+    async export(req: Request, res: Response, next: NextFunction) {
+        const data: IExport = req.body;
+        try {
+            const result = await this.eventUseCase.export(data);
+            // Enviar o arquivo gerado para o cliente
+            res.sendFile(result?.filePath);
+        } catch (error) {
+            next(error);
         }
     }
 }

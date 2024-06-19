@@ -1,5 +1,6 @@
 import { Event } from "../../entities/Events";
 import { Location } from "../../entities/Location";
+import { IExport } from "../../interface/IExport";
 import { IFilterProps } from "../../interface/IFilter";
 
 export interface EventRepository {
@@ -18,4 +19,5 @@ export interface EventRepository {
     updateEvent(event: Event, eventId: string): Promise<Event | undefined> 
     deleteUser(userId: string, eventId: string): Promise<any>
     delete(id: string): Promise<"Deletado">
+    export(data: IExport): Promise<Event[]| undefined>
 }

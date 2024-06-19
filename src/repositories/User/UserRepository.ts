@@ -1,5 +1,6 @@
 import { User } from "../../entities/User";
 import { IEventsPart } from "../../interface/IEventsPart";
+import { IExport } from "../../interface/IExport";
 
 export interface UserRepository {
     add(user: User): Promise<User>
@@ -12,4 +13,5 @@ export interface UserRepository {
     getAllPay(p?:number): Promise<User[] | undefined>
     updateUser(data:any, qrCode:string, txid: string): Promise<User | undefined>
     deletePay(eventId: string, userId: string): Promise<User | null>
+    export(data: IExport): Promise<User[]| undefined>
 }

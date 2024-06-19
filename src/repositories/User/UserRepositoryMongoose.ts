@@ -3,6 +3,7 @@ import { UserRepository } from "./UserRepository";
 import { User } from "../../entities/User";
 import { randomUUID } from 'crypto';
 import { IEventsPart } from "../../interface/IEventsPart";
+import { IExport } from "../../interface/IExport";
 
 const userEventsSchema = new mongoose.Schema({
     _id: {
@@ -121,5 +122,11 @@ export class UserRepositoryMongoose implements UserRepository {
         const count =  (await UserModel.find().exec()).length
         return {pays: result.map((pay) => pay.toObject()), count} 
     }
-    
+    async export (data: IExport): Promise<User[]| undefined> {
+        const result = await UserModel.find({createdAt: {
+            $gte: new Date(data.startDate),
+            $lte: new Date(data.endDate)
+        }}).exec()
+        return result.map((user) => user.toObject())
+    }
 }

@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { randomUUID } from 'crypto';
 import { UserAccountRepository } from "./UserAccountRepository";
 import { UserAccount } from "../../entities/UserAccount";
+import { IExport } from "../../interface/IExport";
 
 
 
@@ -67,5 +68,12 @@ export class UserAccountRepositoryMongoose implements UserAccountRepository {
             $pull: { eventos: payId }
         })
         return null
+    }
+    async export(data: IExport): Promise<UserAccount[] | undefined> {
+        const result = await UserAccountModel.find({createdAt: {
+            $gte: new Date(data.startDate),
+            $lte: new Date(data.endDate)
+        }}).exec()
+        return result.map((users) => users.toObject())
     }
 }

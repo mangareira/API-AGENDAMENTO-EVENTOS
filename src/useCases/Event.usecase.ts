@@ -10,7 +10,10 @@ import { UserAccountRepositoryMongoose } from "../repositories/UserAccount/UserA
 import { UserAccount } from "../entities/UserAccount";
 import { compare, hash} from "bcrypt";
 import { sign, verify } from "jsonwebtoken";
-import { IPayment } from "../interface/IPayment";
+import { IExport } from "../interface/IExport";
+import path from 'path'
+import excel from 'xlsx'
+import crypto from 'node:crypto'
 export class EventUseCase {
     constructor(private eventRepository: EventRepository) {}
     
@@ -442,6 +445,77 @@ export class EventUseCase {
         return {payments, count: result.count}
     }
 
+    async export(data: IExport) {
+        
+        if(data.tableType == 'Users') {
+            let res: any = []
+            const userAccountRepository = new UserAccountRepositoryMongoose()
+            const response = await userAccountRepository.export(data)
+            if (response) {
+                await Promise.all(response.map(async (data) => {
+                        const user= {
+                            name: data.name,
+                            email: data.email,
+                        }
+                        res.push(user)
+                    }
+                ))
+            }
+            const fileName:any = `${crypto.randomBytes(5).toString('hex')}${data.tableType}`
+            const filePath:any = path.join(__dirname,"..","tmp", `exports/${fileName}.xlsx`);
+            this.exportToExcel(res,fileName,filePath)
+            return {filePath,fileName}
+        }
+        if(data.tableType == 'events') {
+            let res: any = []
+            const response = await this.eventRepository.export(data)
+            if (response) {
+                await Promise.all(response.map(async (data) => {
+                        const event= {
+                            title:data.title,
+                            date: data.date,
+                            coupons: data.coupons[0],
+                            description: data.description,
+                            categories: data.categories[0],
+                            price:data.price[0].amount,
+                            sector: data.price[0].sector,
+                            city: data.city,
+                            formattedAddress: data.formattedAddress,
+                        }
+                        res.push(event)
+                    }
+                ))
+            }
+            const fileName:any = `${crypto.randomBytes(5).toString('hex')}${data.tableType}`
+            const filePath:any = path.join(__dirname,"..","tmp", `exports/${fileName}.xlsx`);
+            this.exportToExcel(res,fileName,filePath)
+            return {filePath,fileName}
+        }
+        if(data.tableType == 'transactions') {
+            let res: any = []
+            const userAccountRepository = new UserAccountRepositoryMongoose()
+            const user = new UserRepositoryMongoose()
+            const response = await user.export(data)
+            if (response) {
+                await Promise.all(response.map(async (data) => {
+                    const user = await userAccountRepository.findUserById(data.userId)
+                    const pay= {
+                        name: user?.name,
+                        status: data.payment.status,
+                        value: data.payment.valor,
+                        createdAt: data.createdAt
+                    }
+                        res.push(pay)
+                    }
+                ))
+            }
+            const fileName:any = `${crypto.randomBytes(5).toString('hex')}${data.tableType}`
+            const filePath:any = path.join(__dirname,"..","tmp", `exports/${fileName}.xlsx`);
+            this.exportToExcel(res,fileName,filePath)
+            return {filePath,fileName}
+        }
+    }
+
     private async getCityNameCoordinates(latitude: string, longitude: string) {
 
         try {
@@ -531,4 +605,12 @@ export class EventUseCase {
         const user = await userAccountRepository.findUserById(id)
         return user
     }
+    private exportToExcel = (data:any, sheetName: string, filePath: string) => {
+        const workbook = excel.utils.book_new();
+        const worksheet = excel.utils.json_to_sheet(data);
+        
+        excel.utils.book_append_sheet(workbook, worksheet, sheetName);
+        
+        excel.writeFile(workbook, filePath);
+    };
 }
