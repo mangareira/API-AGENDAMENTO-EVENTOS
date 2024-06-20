@@ -516,6 +516,38 @@ export class EventUseCase {
         }
     }
 
+    async chart() {
+        const userAccountRepository = new UserAccountRepositoryMongoose()
+        const date = new Date()
+        const chartData = [
+            { name: "Sun", participants: 0, events: 0 },
+            { name: "Mon", participants: 0, events: 0 },
+            { name: "Tue", participants: 0, events: 0 },
+            { name: "Wed", participants: 0, events: 0 },
+            { name: "Thu", participants: 0, events: 0 },
+            { name: "Fri", participants: 0, events: 0 },
+            { name: "Sat", participants: 0, events: 0 },
+        ]
+        for (let i = 0; i < 7; i++) {
+            const currentDate = new Date(date);
+            currentDate.setDate(date.getDate() - date.getDay() + i);
+            const startDate = new Date(currentDate);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(currentDate);
+            endDate.setHours(23, 59, 59, 999);
+            const participants = await userAccountRepository.export({
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString()
+            });
+            const numberOfParticipants = participants?.length || 0;
+            const numberOfEvents = participants?.reduce((acc, participant) => acc + (participant.eventos?.length || 0), 0) || 0;
+            chartData[i].participants = numberOfParticipants;
+            chartData[i].events = numberOfEvents;
+        }
+        
+        return chartData;
+    }
+
     private async getCityNameCoordinates(latitude: string, longitude: string) {
 
         try {

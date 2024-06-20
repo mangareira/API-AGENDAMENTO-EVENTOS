@@ -357,4 +357,12 @@ export class EventController {
             next(error);
         }
     }
+    async chart(req: Request, res: Response, next: NextFunction) {
+        try {
+            const result = await this.eventUseCase.chart()
+            res.status(200).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
 }
