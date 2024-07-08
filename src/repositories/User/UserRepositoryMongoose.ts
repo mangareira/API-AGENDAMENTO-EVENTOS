@@ -76,7 +76,7 @@ export class UserRepositoryMongoose implements UserRepository {
         const result = await UserModel.find({userId: id}).exec()
         return result.map((event) => event.toObject())
     }
-    async findPay(id: string, userId: string): Promise<any> {
+    async findPay(id: string, userId: string): Promise<User | undefined> {
         const result = await UserModel.findOne({eventId: id, userId}).exec()
         return result ? result.toObject() : undefined;
     }

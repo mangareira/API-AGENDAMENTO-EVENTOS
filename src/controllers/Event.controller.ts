@@ -365,4 +365,14 @@ export class EventController {
             next(error)
         }
     }
+    async certificate(req: Request, res: Response, next: NextFunction) {
+        const filePath = req.file?.filename
+        const {id} = req.query
+        try {
+            const pdfBuffer = await this.eventUseCase.generateCertificate(filePath,String(id))
+            res.status(200).json(pdfBuffer)
+        } catch (error) {
+            next(error)
+        }
+    }
 }

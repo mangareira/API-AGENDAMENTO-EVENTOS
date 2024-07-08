@@ -14,6 +14,11 @@ import { IExport } from "../interface/IExport";
 import path from 'path'
 import excel from 'xlsx'
 import crypto from 'node:crypto'
+import { PDFDocument, PDFFont, StandardFonts, rgb } from "pdf-lib";
+import { Certificate } from "../entities/Certificate";
+import nodemailer, { SentMessageInfo } from 'nodemailer';
+import fs from 'fs'
+
 export class EventUseCase {
     constructor(private eventRepository: EventRepository) {}
     
@@ -253,7 +258,8 @@ export class EventUseCase {
         const userRepository = new UserRepositoryMongoose()
         const isExists = await userRepository.findPayByTxid(txid)
         if(!isExists) throw new HttpException(400, 'This payment not exists')
-        const newPix  = await this.payment(isExists.payment.valor)
+        const newValue = (isExists.payment.valor.split(','))[0] + '.' +(isExists.payment.valor.split(','))[1] 
+        const newPix  = await this.payment(newValue)
         const update = await userRepository.updateUser(newPix.response.data, newPix.qrcode.data.imagemQrcode,txid)
         return update
         
@@ -548,6 +554,77 @@ export class EventUseCase {
         return chartData;
     }
 
+    async generateCertificate( fileName: string | any, id: string) {
+        const event = await this.eventRepository.findEventsById(id)
+        const userRepository = new UserRepositoryMongoose()
+        const userAccountRepository = new UserAccountRepositoryMongoose()
+        if(event && event.participants) {
+            await Promise.all(event.participants.map(async (userId) => {
+                const payment = await userRepository.findPay(id, userId)
+                if(payment) {
+                    if(payment.payment.status == "Pago" || "gratis") {
+                        const user = await userAccountRepository.findUserById(userId)
+                        const pdfDoc = await PDFDocument.create()
+                        const page = pdfDoc.addPage([842, 595])
+                        if(fileName){    
+                            const backgroundImagePath = path.resolve(__dirname,'..','tmp','uploads', fileName); // Caminho da imagem de fundo
+                            const backgroundImageBytes = this.loadImage(backgroundImagePath);
+                            const backgroundImage = await pdfDoc.embedPng(backgroundImageBytes);
+                            page.drawImage(backgroundImage, {
+                                x: 0,
+                                y: 0,
+                                width: page.getWidth(),
+                                height: page.getHeight(),
+                            })
+                        }
+                        const { width, height } = page.getSize();
+                        const fontSizeTitle = 62;
+                        const font = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+
+                        page.drawText('CERTIFICADO', {
+                            x: 215,
+                            y: height - 150,
+                            size: fontSizeTitle,
+                            font,
+                            color: rgb(0, 0, 0),
+                        });
+
+                        page.drawText(`ESTE CERTIFICADO COMPROVA QUE`, {
+                            x: 290,
+                            y: height - 243,
+                            size: 15,
+                            font,
+                            color: rgb(0, 0, 0), // Preto para o texto 
+                        });
+                        const newDate = new Date(event.date)
+                        const textLines = this.wrapText(`${user?.name} concluiu o curso de ${event.title} no periodo de ${newDate.getDay()}/${newDate.getMonth()}/${newDate.getFullYear()} com carga horaria de 4 horas`,
+                            font,
+                            10,
+                            400,
+                        )
+
+                        let yPosition: number = height - 220 - fontSizeTitle - 50;
+                        textLines.forEach(line => {
+                        page.drawText(line, {
+                            x: 130 ,
+                            y: yPosition,
+                            size: 15,
+                            font,
+                            color: rgb(0, 0, 0),
+
+                        });
+                        yPosition -= 10 + 20; // Avançar para a próxima linha
+                        });
+                        
+                        const pdfBytes = await pdfDoc.save();
+                        // const filePath = path.resolve(__dirname, '..','tmp','uploads',`${user?.name.replace(/\s/g, '_')}-certificate.pdf`) 
+                        await this.sendCert(user,pdfBytes)
+                    }
+                }
+            }))
+        }
+    }
+
     private async getCityNameCoordinates(latitude: string, longitude: string) {
 
         try {
@@ -637,6 +714,7 @@ export class EventUseCase {
         const user = await userAccountRepository.findUserById(id)
         return user
     }
+
     private exportToExcel = (data:any, sheetName: string, filePath: string) => {
         const workbook = excel.utils.book_new();
         const worksheet = excel.utils.json_to_sheet(data);
@@ -645,4 +723,60 @@ export class EventUseCase {
         
         excel.writeFile(workbook, filePath);
     };
+
+    private loadImage(filePath: string) {
+        return fs.readFileSync(filePath)
+    }
+
+    private wrapText(text: string, font: PDFFont, fontSize: number, maxWidth: number) {
+        const words = text.split(' ');
+        let lines = [];
+        let currentLine = words[0];
+    
+        for (let i = 1; i < words.length; i++) {
+            const word = words[i];
+            const width = font.widthOfTextAtSize(currentLine + ' ' + word, fontSize);
+            if (width < maxWidth) {
+                currentLine += ' ' + word;
+            } else {
+                lines.push(currentLine);
+                currentLine = word;
+            }
+        }
+        lines.push(currentLine);
+        return lines;
+    }
+
+    private async sendCert(data: UserAccount | undefined, pdfBytes: Uint8Array) {
+        if(data) {
+            const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_EMAIL,
+                port: parseInt(process.env.SMTP_PORT || '587'),
+                secure: false,
+                auth: {
+                  user: process.env.SMTP_AUTH, 
+                  pass: process.env.SMTP_PASS,
+                },
+            } as nodemailer.TransportOptions); 
+            const mailOptions = {
+                from: `"Nome do Remetente"<${process.env.SMTP_AUTH}>`,
+                to: data.email,
+                subject: 'Seu Certificado de Participação',
+                text: `Olá ${data.name},\n\nAqui está o seu certificado de participação no evento.\n\nAtenciosamente,\nEquipe Organizadora`,
+                attachments: [
+                    {
+                    filename: `${data.name.replace(/\s/g, '_')}-certificate.pdf`,
+                    content:  Buffer.from(pdfBytes),
+                    contentType: 'application/pdf',
+                    },
+                ],
+            };
+            try {
+                const info: SentMessageInfo = await transporter.sendMail(mailOptions);
+                console.log(`Email enviado: ${info.messageId}`);
+            } catch (error) {
+                console.error(`Erro ao enviar email: ${error}`);
+            }
+        }
+    }
 }
