@@ -559,69 +559,33 @@ export class EventUseCase {
         const userRepository = new UserRepositoryMongoose()
         const userAccountRepository = new UserAccountRepositoryMongoose()
         if(event && event.participants) {
+            const quantity = event.participants.length
             await Promise.all(event.participants.map(async (userId) => {
                 const payment = await userRepository.findPay(id, userId)
                 if(payment) {
                     if(payment.payment.status == "Pago" || "gratis") {
                         const user = await userAccountRepository.findUserById(userId)
-                        const pdfDoc = await PDFDocument.create()
-                        const page = pdfDoc.addPage([842, 595])
-                        if(fileName){    
-                            const backgroundImagePath = path.resolve(__dirname,'..','tmp','uploads', fileName); // Caminho da imagem de fundo
-                            const backgroundImageBytes = this.loadImage(backgroundImagePath);
-                            const backgroundImage = await pdfDoc.embedPng(backgroundImageBytes);
-                            page.drawImage(backgroundImage, {
-                                x: 0,
-                                y: 0,
-                                width: page.getWidth(),
-                                height: page.getHeight(),
-                            })
-                        }
-                        const { width, height } = page.getSize();
-                        const fontSizeTitle = 62;
-                        const font = await pdfDoc.embedFont(StandardFonts.TimesRoman);
-
-                        page.drawText('CERTIFICADO', {
-                            x: 215,
-                            y: height - 150,
-                            size: fontSizeTitle,
-                            font,
-                            color: rgb(0, 0, 0),
-                        });
-
-                        page.drawText(`ESTE CERTIFICADO COMPROVA QUE`, {
-                            x: 290,
-                            y: height - 243,
-                            size: 15,
-                            font,
-                            color: rgb(0, 0, 0), // Preto para o texto 
-                        });
-                        const newDate = new Date(event.date)
-                        const textLines = this.wrapText(`${user?.name} concluiu o curso de ${event.title} no periodo de ${newDate.getDay()}/${newDate.getMonth()}/${newDate.getFullYear()} com carga horaria de 4 horas`,
-                            font,
-                            10,
-                            400,
-                        )
-
-                        let yPosition: number = height - 220 - fontSizeTitle - 50;
-                        textLines.forEach(line => {
-                        page.drawText(line, {
-                            x: 130 ,
-                            y: yPosition,
-                            size: 15,
-                            font,
-                            color: rgb(0, 0, 0),
-
-                        });
-                        yPosition -= 10 + 20; // Avançar para a próxima linha
-                        });
-                        
-                        const pdfBytes = await pdfDoc.save();
-                        // const filePath = path.resolve(__dirname, '..','tmp','uploads',`${user?.name.replace(/\s/g, '_')}-certificate.pdf`) 
-                        await this.sendCert(user,pdfBytes)
+                        this.createCertificate(user,event,fileName, quantity)
                     }
                 }
             }))
+        }
+        fs.rename(path.resolve(__dirname,'..','tmp','uploads', fileName), path.resolve(__dirname, '..', 'tmp','uploads','fundo.png'), (err) => {
+            if (err) throw err;
+        })
+    }
+
+    async getMyCertificate(userId: string | undefined, eventId: string | undefined) {
+        const userAccountRepository = new UserAccountRepositoryMongoose()
+        const findEvent = await this.eventRepository.findEventsById(eventId)
+        const date = new Date(String(findEvent?.date))
+        const user = await userAccountRepository.findUserById(userId)
+        if(findEvent && user) if(new Date() > date) {
+            const pdf = await this.createCertificate(user,findEvent,"fundo.png",1)
+            return pdf
+            // const filePath = path.resolve(__dirname, "..", "tmp", "exports", `${user.name.replace(/\s/g, '_')}-certificate.pdf`)
+            // fs.writeFileSync(filePath, pdf)
+            // return filePath
         }
     }
 
@@ -745,6 +709,65 @@ export class EventUseCase {
         }
         lines.push(currentLine);
         return lines;
+    }
+
+    private async createCertificate (user: UserAccount | undefined, event: Event, fileName: string, quantity: number) {
+        const pdfDoc = await PDFDocument.create()
+        const page = pdfDoc.addPage([842, 595])
+        if(fileName){    
+            const backgroundImagePath = path.resolve(__dirname,'..','tmp','uploads', fileName); // Caminho da imagem de fundo
+            const backgroundImageBytes = this.loadImage(backgroundImagePath);
+            const backgroundImage = await pdfDoc.embedPng(backgroundImageBytes);
+            
+            page.drawImage(backgroundImage, {
+                x: 0,
+                y: 0,
+                width: page.getWidth(),
+                height: page.getHeight(),
+            })
+        }
+        const { width, height } = page.getSize();
+        const fontSizeTitle = 62;
+        const font = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+
+        page.drawText('CERTIFICADO', {
+            x: 215,
+            y: height - 150,
+            size: fontSizeTitle,
+            font,
+            color: rgb(0, 0, 0),
+        });
+
+        page.drawText(`ESTE CERTIFICADO COMPROVA QUE`, {
+            x: 290,
+            y: height - 243,
+            size: 15,
+            font,
+            color: rgb(0, 0, 0), // Preto para o texto 
+        });
+        const newDate = new Date(event.date)
+        const textLines = this.wrapText(`${user?.name} concluiu o curso de ${event.title} no periodo de ${newDate.getDay()}/${newDate.getMonth()}/${newDate.getFullYear()} com carga horaria de 4 horas`,
+            font,
+            10,
+            400,
+        )
+
+        let yPosition: number = height - 220 - fontSizeTitle - 50;
+        textLines.forEach(line => {
+        page.drawText(line, {
+            x: 130 ,
+            y: yPosition,
+            size: 15,
+            font,
+            color: rgb(0, 0, 0),
+
+        });
+        yPosition -= 10 + 20; // Avançar para a próxima linha
+        });
+        
+        const pdfBytes = await pdfDoc.save();
+        if(quantity > 1) await this.sendCert(user,pdfBytes)        
+        return pdfBytes 
     }
 
     private async sendCert(data: UserAccount | undefined, pdfBytes: Uint8Array) {

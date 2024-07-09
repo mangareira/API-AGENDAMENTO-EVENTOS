@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "dev": "tsx watch ./src/main.ts",
-    "build": "tsup src"
+    "build": "tsup src/main.ts"
   },
   "engines": {
     "node": "20"

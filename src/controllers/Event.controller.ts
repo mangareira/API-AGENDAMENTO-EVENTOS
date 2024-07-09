@@ -366,11 +366,22 @@ export class EventController {
         }
     }
     async certificate(req: Request, res: Response, next: NextFunction) {
-        const filePath = req.file?.filename
+        const filePath = req.file?.filename || "fundo.png"
         const {id} = req.query
         try {
-            const pdfBuffer = await this.eventUseCase.generateCertificate(filePath,String(id))
-            res.status(200).json(pdfBuffer)
+            await this.eventUseCase.generateCertificate(filePath,String(id))
+            res.status(200).json({message: "Enviadado com sucesso"})
+        } catch (error) {
+            next(error)
+        }
+    }
+    async myCertificate(req: Request, res: Response, next: NextFunction) {
+        const {userId, eventId} = req.query
+        try {
+            const pdfBuffer = await this.eventUseCase.getMyCertificate(String(userId), String(eventId))
+            if (pdfBuffer) {
+                res.status(200).send(Buffer.from(pdfBuffer));
+            }
         } catch (error) {
             next(error)
         }

@@ -41,7 +41,7 @@ export class UserAccountRepositoryMongoose implements UserAccountRepository {
         const result = await UserAccountModel.findOne({email}).exec()
         return result ? result.toObject() : undefined
     }
-    async findUserById(id: string): Promise<UserAccount | undefined> {
+    async findUserById(id?: string): Promise<UserAccount | undefined> {
         const result = await UserAccountModel.findById({_id: id}).exec()
         return result ? result.toObject() : undefined
     }
