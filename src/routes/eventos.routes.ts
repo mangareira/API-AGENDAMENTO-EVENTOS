@@ -53,7 +53,7 @@ export class EventRoutes {
         this.router.post('/webhook(/pix)?', this.eventController.webhook.bind(this.eventController))
         this.router.post('/add-with-email/participants', this.eventController.addPartWithEmail.bind(this.eventController))
         this.router.post('/exports',authMiddleware, this.eventController.export.bind(this.eventController))
-        this.router.post('/certificate',authMiddleware,upload.single('img') ,this.eventController.certificate.bind(this.eventController))
+        this.router.post('/certificate',authMiddleware,this.eventController.certificate.bind(this.eventController))
         this.router.post('/my-certificate',authMiddleware ,this.eventController.myCertificate.bind(this.eventController))
         this.router.put('/update-user/:id',authMiddleware, this.eventController.updateUser.bind(this.eventController))
         this.router.put('/update-event/:id',authMiddleware, this.eventController.updateEvent.bind(this.eventController))

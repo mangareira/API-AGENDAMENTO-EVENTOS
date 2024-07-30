@@ -771,6 +771,7 @@ export class EventUseCase {
     }
 
     private async sendCert(data: UserAccount | undefined, pdfBytes: Uint8Array) {
+        const account = await nodemailer.createTestAccount()
         if(data) {
             const transporter = nodemailer.createTransport({
                 host: process.env.SMTP_EMAIL,
@@ -796,7 +797,6 @@ export class EventUseCase {
             };
             try {
                 const info: SentMessageInfo = await transporter.sendMail(mailOptions);
-                console.log(`Email enviado: ${info.messageId}`);
             } catch (error) {
                 console.error(`Erro ao enviar email: ${error}`);
             }
