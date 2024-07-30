@@ -8,16 +8,15 @@ import { API } from "../config";
 import { User } from "../entities/User";
 import { UserAccountRepositoryMongoose } from "../repositories/UserAccount/UserAccountRepositorymoongose";
 import { UserAccount } from "../entities/UserAccount";
-import { compare, hash} from "bcrypt";
+import { compare, hash } from "bcrypt";
 import { sign, verify } from "jsonwebtoken";
 import { IExport } from "../interface/IExport";
-import path from 'path'
-import excel from 'xlsx'
-import crypto from 'node:crypto'
+import path from 'path';
+import excel from 'xlsx';
+import crypto from 'node:crypto';
 import { PDFDocument, PDFFont, StandardFonts, rgb } from "pdf-lib";
-import { Certificate } from "../entities/Certificate";
 import nodemailer, { SentMessageInfo } from 'nodemailer';
-import fs from 'fs'
+import fs from 'fs';
 
 export class EventUseCase {
     constructor(private eventRepository: EventRepository) {}
