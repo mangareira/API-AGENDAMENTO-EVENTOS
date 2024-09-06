@@ -50,9 +50,11 @@ export class EventRepositoryMongoose implements EventRepository{
         const findEvent = await EventModel.find({city}).exec()
         return findEvent.map((event) => event.toObject())
     }
-    async findEventsByCategory(category: string): Promise<Event[]> {
-        const findEvent = await EventModel.find({categories: category}).exec()
-        return findEvent.map((event) => event.toObject())
+    async findEventsByCategory(category: string,page?: number | any, limit?: number | any): Promise<Event[] | any> {
+        const skip = (page - 1) * limit
+        const findEvent = await EventModel.find({categories: category}).skip(skip).limit(limit).exec()
+        const quantity = (await EventModel.find({ categories: category })).length
+        return {events: findEvent.map((event) => event.toObject()), quantity}
     }
     async findEventsByName(name: string): Promise<Event[]> {
         const findEvent = await EventModel.find({title: {
@@ -83,32 +85,39 @@ export class EventRepositoryMongoose implements EventRepository{
         .exec();    
         return findEvent.map((event) => event.toObject());
     }
-    async findEventsByFilter(data: IFilterProps): Promise<Event[]> {        
+    async findEventsByFilter(data: IFilterProps): Promise<Event[]> {     
         const query = {
-            $and : [
-                {title: data.name ? {
+            $and: [
+                // Verifica o título, se 'data.name' estiver presente usa regex para busca parcial e case-insensitive
+                { title: (data.name !== 'undefined') ? {
                     $regex: data.name,
                     $options: 'i'
-                }: {$exists: true}},
-                { date: data.date ? { $gte: new Date(data.date) } : { $exists: true } },
-                {categories: data.category ? {
+                } : { $exists: true } },
+        
+                // Verifica a data, se 'data.date' estiver presente faz uma comparação com '$gte'
+                { date: (data.date !== 'undefined' ) ? { $gte: new Date(data.date) } : { $exists: true } },
+        
+                // Verifica categorias, se 'data.category' estiver presente, usa '$in' para buscar na lista de categorias
+                { categories: data.category && data.category.trim() !== '' ? {
                     $in: [data.category]
-                }: {$exists: true}},
-                // {'price.amount': {
-                //     $gte: data.price ? String(data.price): '0'
-                // }},
-                {'location.latitude': {
-                        $gte: String(data.latitude - data.radius),
-                        $lte: String(data.latitude + data.radius)
-                    },
-                'location.longitude': {
-                        $gte: String(data.longitude - data.radius),
-                        $lte: String(data.longitude + data.radius)
-                    },
-                },
+                } : { $exists: true } },
+        
+                // Verifica a latitude e longitude, e faz a comparação correta usando números
+                {
+                    'location.latitude': !Number.isNaN(data.latitude) ? {
+                        $gte: data.latitude - data.radius,
+                        $lte: data.latitude + data.radius
+                    }: {$exists: true},
+                    'location.longitude': !Number.isNaN(data.latitude) ? {
+                        $gte: data.longitude - data.radius,
+                        $lte: data.longitude + data.radius
+                    } : {$exists: true}
+                }
             ]
-        }
-        const findEvent = await EventModel.find(query).exec()        
+        };
+        
+        const findEvent = await EventModel.find(query).exec();      
+        
         return findEvent.map((event) => event.toObject())
     }
     async findEventsByUserId(id: string, page: number, limit: number): Promise<Event[] | any> {

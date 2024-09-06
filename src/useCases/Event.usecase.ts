@@ -35,12 +35,12 @@ export class EventUseCase {
 
         if (verifyEvent) throw new HttpException(400, 'Event already exists');
         
-        const cityName = await this.getCityNameCoordinates(eventData.location.latitude, eventData.location.longitude)
-        eventData = {
-            ...eventData,
-            city: cityName.cityName,
-            formattedAddress: cityName.formattedAddress
-        }
+        // const cityName = await this.getCityNameCoordinates(eventData.location.latitude, eventData.location.longitude)
+        // eventData = {
+        //     ...eventData,
+        //     city: cityName.cityName,
+        //     formattedAddress: cityName.formattedAddress
+        // }
         const result = await this.eventRepository.add(eventData)
         return result
     }
@@ -591,7 +591,7 @@ export class EventUseCase {
     private async getCityNameCoordinates(latitude: string, longitude: string) {
 
         try {
-            const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyDoAYR3fYzgI5bOuGldIG4c2hMni5dNBTk`)
+            const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_API_KEY}`)
             
             if(response.data.status === 'OK' && response.data.results.length > 0) {
                 const address = response.data.results[0].address_components

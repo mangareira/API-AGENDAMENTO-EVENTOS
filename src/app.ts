@@ -7,7 +7,6 @@ import path from 'path'
 
 export class App{
     public app: Application
-    public httpsServer: any
     private eventRoutes = new EventRoutes()
     constructor() {
         this.app = express()
