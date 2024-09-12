@@ -24,6 +24,7 @@ export class EventUseCase {
     
 
     async create(eventData: Event) {
+        console.log(eventData);
         
         if (!eventData.banner) {
             throw new HttpException(400, 'Banner is required');
