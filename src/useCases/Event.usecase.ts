@@ -24,7 +24,6 @@ export class EventUseCase {
     
 
     async create(eventData: Event) {
-        console.log(eventData);
         
         if (!eventData.banner) {
             throw new HttpException(400, 'Banner is required');
@@ -36,12 +35,12 @@ export class EventUseCase {
 
         if (verifyEvent) throw new HttpException(400, 'Event already exists');
         
-        // const cityName = await this.getCityNameCoordinates(eventData.location.latitude, eventData.location.longitude)
-        // eventData = {
-        //     ...eventData,
-        //     city: cityName.cityName,
-        //     formattedAddress: cityName.formattedAddress
-        // }
+        const cityName = await this.getCityNameCoordinates(eventData.location.latitude, eventData.location.longitude)
+        eventData = {
+            ...eventData,
+            city: cityName.cityName,
+            formattedAddress: cityName.formattedAddress
+        }
         const result = await this.eventRepository.add(eventData)
         return result
     }
