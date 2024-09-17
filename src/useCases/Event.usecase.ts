@@ -152,6 +152,7 @@ export class EventUseCase {
         radius,
         //price,
       }: IFilterProps) {
+        if(!date) return []
         const events = await this.eventRepository.findEventsByFilter({
             latitude,
             longitude,
