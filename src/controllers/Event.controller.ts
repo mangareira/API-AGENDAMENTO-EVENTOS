@@ -292,9 +292,9 @@ export class EventController {
         }
     }
     async deleteEvent(req: Request, res: Response, next: NextFunction) {
-        const {id} = req.params
+        const {id} = req.query
         try {
-            const result = await this.eventUseCase.deleteEvent(id)
+            const result = await this.eventUseCase.deleteEvent(String(id))
             res.status(200).json(result)
         } catch (error) {
             next(error)
