@@ -93,6 +93,9 @@ export class EventUseCase {
         const userRepository = new UserRepositoryMongoose()
         const event = await this.eventRepository.findEventsById(id)
         const userAccount = await userAccountRepository.findUserById(participant.userId)
+        if(event?.participants.length == event?.limit) {
+            throw new HttpException(400, "Sem vagas para este evento")
+        }
         if(!event) {
             throw  new HttpException(400, 'Event not found')
         }

@@ -30,7 +30,8 @@ const eventSchema = new mongoose.Schema({
     participants: {
         ref: 'User',
         type: Array,
-    }
+    },
+    limit: Number
 })
 
 const EventModel = mongoose.model('Event', eventSchema)

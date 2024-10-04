@@ -16,5 +16,6 @@ export class Event {
         public city: string,
         public categories: string[],
         public formattedAddress: string,
+        public limit: number
     ) {}
 }
