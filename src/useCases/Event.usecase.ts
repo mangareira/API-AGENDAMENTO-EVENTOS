@@ -96,6 +96,9 @@ export class EventUseCase {
         if(event?.participants.length == event?.limit) {
             throw new HttpException(400, "Sem vagas para este evento")
         }
+        if(event?.participants.includes(`${participant._id}`)) {
+            throw new HttpException(400, "já esta inscrito no evento")
+        }
         if(!event) {
             throw  new HttpException(400, 'Event not found')
         }

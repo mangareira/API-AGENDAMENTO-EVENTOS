@@ -105,6 +105,7 @@ export class UserRepositoryMongoose implements UserRepository {
         if(!pay) {
             return null
         }
+        pay.eventId = ''
         pay.payment = {
             expirationTime: '',
             pixCopiaECola: '',
