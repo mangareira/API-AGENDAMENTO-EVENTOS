@@ -17,6 +17,7 @@ import crypto from 'node:crypto';
 import { PDFDocument, PDFFont, StandardFonts, rgb } from "pdf-lib";
 import nodemailer, { SentMessageInfo } from 'nodemailer';
 import fs from 'fs';
+import { Document, HeadingLevel, ImageRun, Packer, Paragraph, Table, TableCell, TableRow, TextDirection, TextRun, VerticalAlign, WidthType } from "docx";
 
 export class EventUseCase {
     constructor(private eventRepository: EventRepository) {}
@@ -474,7 +475,7 @@ export class EventUseCase {
                 ))
             }
             const fileName:any = `${crypto.randomBytes(5).toString('hex')}${data.tableType}`
-            const filePath:any = path.join(__dirname,"..","tmp", `exports/${fileName}.xlsx`);
+            const filePath:any = path.join(__dirname,"..","infra","upload","tmp", `exports/${fileName}.xlsx`);
             this.exportToExcel(res,fileName,filePath)
             return {filePath,fileName}
         }
@@ -499,7 +500,7 @@ export class EventUseCase {
                 ))
             }
             const fileName:any = `${crypto.randomBytes(5).toString('hex')}${data.tableType}`
-            const filePath:any = path.join(__dirname,"..","tmp", `exports/${fileName}.xlsx`);
+            const filePath:any = path.join(__dirname,"..","infra","upload","tmp", `exports/${fileName}.xlsx`);
             this.exportToExcel(res,fileName,filePath)
             return {filePath,fileName}
         }
@@ -522,7 +523,7 @@ export class EventUseCase {
                 ))
             }
             const fileName:any = `${crypto.randomBytes(5).toString('hex')}${data.tableType}`
-            const filePath:any = path.join(__dirname,"..","tmp", `exports/${fileName}.xlsx`);
+            const filePath:any = path.join(__dirname,"..","infra","upload","tmp", `exports/${fileName}.xlsx`);
             this.exportToExcel(res,fileName,filePath)
             return {filePath,fileName}
         }
@@ -593,6 +594,20 @@ export class EventUseCase {
             // fs.writeFileSync(filePath, pdf)
             // return filePath
         }
+    }
+
+    async listEvent(id: string) {
+        const findEvent = await this.eventRepository.findEventsById(id)
+        const userAccount = new UserAccountRepositoryMongoose()
+        if(!findEvent) throw new HttpException(400, "evento não encontrado")
+        const participants = await Promise.all(findEvent.participants.map(async (id) => {
+            const participant = await userAccount.findUserById(id)
+            return {
+                name: participant?.name
+            }
+        }))
+        const buffer = await this.createList(participants, findEvent.title, findEvent.date)
+        return buffer
     }
 
     private async getCityNameCoordinates(latitude: string, longitude: string) {
@@ -807,5 +822,163 @@ export class EventUseCase {
                 console.error(`Erro ao enviar email: ${error}`);
             }
         }
+    }
+
+    private async createList(participants: any, eventName: string, date: Date) {
+        
+        const doc = new Document({
+            sections: [
+                {
+                    properties: {},
+                    headers: {
+                        default: {
+                            options: {
+                                children: [
+                                    // Cabeçalho
+                                    new Paragraph({
+                                        children: [
+                                            new ImageRun({
+                                                data: fs.readFileSync("./src/infra/upload/tmp/uploads/logo.png"),
+                                                transformation: {
+                                                    height: 50,
+                                                    width: 300
+                                                }
+                                            }),
+                                        ],
+                                        alignment: "center"
+                                    }),
+                                    new Paragraph({
+                                        children: [
+                                            new TextRun({
+                                                text: "FACULDADE DO CENTRO MARANHENSE - FCMA",
+                                                bold: true,
+                                                size: 24,
+                                            }),
+                                        ],
+                                        alignment: "center"
+                                    }),
+                                    new Paragraph({
+                                        children: [
+                                            new TextRun({
+                                                text: `Credenciada pelo Ministério da Educação - MEC Portaria no. 135, de 02 de fevereiro de 2017`,
+                                                size: 18,
+                                            }),
+                                        ],
+                                        alignment: "center"
+                                    }),
+                                ]
+                            }
+                        }
+                    },
+                    children: [
+                        
+                        new Paragraph({
+                            children: [
+                                new TextRun({
+                                    text: `Evento: ${eventName}`,
+                                    size: `${12}pt`,
+                                }),
+                            ],
+                            alignment: "center"
+                        }),
+                        new Paragraph({
+                            children: [
+                                new TextRun({
+                                    text: `\nData Inicial: ${new Date(date).getDay()}/${new Date(date).getMonth()}/${new Date(date).getFullYear()}`,
+                                    size: `${12}pt`,
+                                })
+                            ],
+                            alignment: "center"
+                        }),
+                        // Tabela
+                        new Table({
+                            width: {
+                                size: 9070,
+                                type: WidthType.DXA
+                            },
+                            rows: [
+                                // Cabeçalho da Tabela
+                                new TableRow({
+                                    children: [
+                                        new TableCell({
+                                            children: [
+                                                new Paragraph({
+                                                    heading: HeadingLevel.HEADING_2,
+                                                    children: [
+                                                        new TextRun({
+                                                            text: "Participante",
+                                                            bold: true,
+                                                            size: 40,
+                                                            color: "#000000"
+                                                        }),
+                                                    ],
+                                                    alignment: "center"
+                                                }),
+                                            ],
+                                        }),
+                                        new TableCell({
+                                            children: [
+                                                new Paragraph({
+                                                    heading: HeadingLevel.HEADING_2,
+                                                    children: [
+                                                        new TextRun({
+                                                            text: "Assinatura",
+                                                            bold: true,
+                                                            size: 40,
+                                                            color: "#000000",
+                                                        }),
+                                                    ],
+                                                    alignment: "center"
+                                                }),
+                                            ],
+                                            
+                                        }),
+                                    ]
+                                }),
+                                // Adicionando os participantes na tabela
+                                ...participants.map((participant: any) =>
+                                    new TableRow({
+                                        children: [
+                                            new TableCell({
+                                                children: [new Paragraph({
+                                                    children: [
+                                                        new TextRun({
+                                                            text: participant.name,
+                                                            size: `${10}pt`
+                                                        })
+                                                    ],
+                                                })],
+                                                margins: {
+                                                    top: 100,
+                                                    bottom: 100,
+                                                    left: 100
+                                                },
+                                                width: {
+                                                    size: 50,
+                                                    type: "pct"
+                                                }
+                                            }),
+                                            new TableCell({
+                                                children: [new Paragraph("")], 
+                                                width: {
+                                                    size: 50,
+                                                    type: "pct"
+                                                }
+                                            }),
+                                        ],
+                                    })
+                                ),
+                            ],
+                        }),
+                    ],
+                },
+            ],
+            
+        });
+        
+    
+        // Gerar o documento Word
+        const buffer = await Packer.toBuffer(doc);
+        return buffer
     }
 }

@@ -386,4 +386,16 @@ export class EventController {
             next(error)
         }
     }
+    async exportList(req: Request, res: Response, next: NextFunction) {
+        const {id} = req.query
+        try {
+            const docxBuffer = await this.eventUseCase.listEvent(String(id))
+            res.setHeader('Content-Disposition', 'attachment; filename=lista-de-presenca.docx');
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+            
+            res.send(docxBuffer);
+        } catch (error) {
+            next(error)
+        }
+    }
 }

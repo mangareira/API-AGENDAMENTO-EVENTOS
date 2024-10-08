@@ -3,4 +3,5 @@ coverage
 tmp
 .env
 certs
+build
 dist

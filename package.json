@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest",
     "dev": "tsx watch ./src/main.ts",
-    "build": "tsup src/main.ts"
+    "build": "tsc",
+    "start": "node build/main.js"
   },
   "engines": {
     "node": "20"
@@ -23,14 +24,15 @@
     "@types/multer": "^1.4.11",
     "@types/nodemailer": "^6.4.15",
     "dotenv": "^16.4.5",
-    "tsup": "^8.1.0",
-    "tsx": "^4.7.1",
-    "typescript": "^5.3.3"
+    "tsc": "^2.0.4",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2"
   },
   "dependencies": {
     "axios": "^1.6.7",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
+    "docx": "^8.5.0",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.1.3",
