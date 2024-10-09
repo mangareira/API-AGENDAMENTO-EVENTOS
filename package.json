@@ -24,9 +24,8 @@
     "@types/multer": "^1.4.11",
     "@types/nodemailer": "^6.4.15",
     "dotenv": "^16.4.5",
-    "tsc": "^2.0.4",
     "tsx": "^4.19.1",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.3"
   },
   "dependencies": {
     "axios": "^1.6.7",

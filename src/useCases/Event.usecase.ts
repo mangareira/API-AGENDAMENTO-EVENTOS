@@ -369,7 +369,8 @@ export class EventUseCase {
         const paginatedUsers = users.slice(startIndex, endIndex);
         return {
             users: paginatedUsers,
-            count
+            count,
+            event
         }
     }
 
@@ -608,6 +609,11 @@ export class EventUseCase {
         }))
         const buffer = await this.createList(participants, findEvent.title, findEvent.date)
         return buffer
+    }
+
+    async isConfirm(id: string, isConfirm: boolean, eventId: string) {
+        const user = new UserRepositoryMongoose()
+        await user.isConfirm(id, isConfirm, eventId)
     }
 
     private async getCityNameCoordinates(latitude: string, longitude: string) {
