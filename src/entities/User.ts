@@ -7,6 +7,7 @@ export class User{
         public payment: Payment,
         public tickets: string,
         public discount: string,
+        public isConfirmed: boolean,
         public _id?: string,
         public createdAt?: string
     ) {}

@@ -94,6 +94,7 @@ export class EventController {
                     expirationTime: ''
                 },
                 tickets,
+                isConfirmed: false,
                 discount
             };            
             const updatedEvent = await this.eventUseCase.addParticipant(id, participant, valor);
@@ -394,6 +395,16 @@ export class EventController {
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
             
             res.send(docxBuffer);
+        } catch (error) {
+            next(error)
+        }
+    }
+    async isConfirmed(req: Request, res: Response, next: NextFunction) {
+        const { id, isConfirmed, eventId } = req.query
+
+        try {
+            const result = await this.eventUseCase.isConfirm(String(id), (isConfirmed == "false" ? false : true), String(eventId))
+            res.status(200).json({message: "Confirmado com sucesso"})
         } catch (error) {
             next(error)
         }

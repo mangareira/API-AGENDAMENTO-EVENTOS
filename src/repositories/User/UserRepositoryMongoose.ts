@@ -28,6 +28,7 @@ const userEventsSchema = new mongoose.Schema({
     },
     tickets: String,
     discount: String,
+    isConfirmed: Boolean,
     createdAt: {
         type: Date,
         default: Date.now
@@ -129,5 +130,8 @@ export class UserRepositoryMongoose implements UserRepository {
             $lte: new Date(data.endDate)
         }}).exec()
         return result.map((user) => user.toObject())
+    }
+    async isConfirm(id: string, isConfirm: boolean, eventId: string): Promise<void> {
+        await UserModel.findOneAndUpdate({userId: id, eventId}, {isConfirmed: isConfirm})
     }
 }

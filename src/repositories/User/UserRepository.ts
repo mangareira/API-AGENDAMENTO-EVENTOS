@@ -14,4 +14,5 @@ export interface UserRepository {
     updateUser(data:any, qrCode:string, txid: string): Promise<User | undefined>
     deletePay(eventId: string, userId: string): Promise<User | null>
     export(data: IExport): Promise<User[]| undefined>
+    isConfirm(id: string, isConfirm: boolean, eventId: string): Promise<void>
 }
