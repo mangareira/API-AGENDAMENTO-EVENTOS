@@ -13,6 +13,8 @@ const eventSchema = new mongoose.Schema({
         longitude: String,
     },
     date: Date,
+    finalDate: Date,
+    hours: Number,
     createdAt: {
         type: Date,
         default: Date.now

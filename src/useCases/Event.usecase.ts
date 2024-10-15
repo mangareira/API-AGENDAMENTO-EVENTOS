@@ -585,12 +585,16 @@ export class EventUseCase {
 
     async getMyCertificate(userId: string | undefined, eventId: string | undefined) {
         const userAccountRepository = new UserAccountRepositoryMongoose()
+        const userRepository = new UserRepositoryMongoose()
         const findEvent = await this.eventRepository.findEventsById(eventId)
-        const date = new Date(String(findEvent?.date))
         const user = await userAccountRepository.findUserById(userId)
-        if(findEvent && user) if(new Date() > date) {
-            const pdf = await this.createCertificate(user,findEvent,"fundo.png",1)
-            return pdf
+        if(findEvent && eventId && userId) {
+            const payment = await userRepository.findPay(eventId, userId)
+            if(payment?.isConfirmed) {
+                const pdf = await this.createCertificate(user,findEvent,"fundo.png",1)
+                return pdf
+            }
+            throw new HttpException(400, "Você não foi confimado a presença")
             // const filePath = path.resolve(__dirname, "..", "tmp", "exports", `${user.name.replace(/\s/g, '_')}-certificate.pdf`)
             // fs.writeFileSync(filePath, pdf)
             // return filePath
@@ -742,7 +746,7 @@ export class EventUseCase {
         const pdfDoc = await PDFDocument.create()
         const page = pdfDoc.addPage([842, 595])
         if(fileName){    
-            const backgroundImagePath = path.resolve(__dirname,'..','tmp','uploads', fileName); // Caminho da imagem de fundo
+            const backgroundImagePath = path.resolve(__dirname,'..','infra/upload','tmp','uploads', fileName); // Caminho da imagem de fundo
             const backgroundImageBytes = this.loadImage(backgroundImagePath);
             const backgroundImage = await pdfDoc.embedPng(backgroundImageBytes);
             
@@ -772,8 +776,14 @@ export class EventUseCase {
             font,
             color: rgb(0, 0, 0), // Preto para o texto 
         });
-        const newDate = new Date(event.date)
-        const textLines = this.wrapText(`${user?.name} concluiu o curso de ${event.title} no periodo de ${newDate.getDay()}/${newDate.getMonth()}/${newDate.getFullYear()} com carga horaria de 4 horas`,
+        const newDate = new Date(event.date).toISOString().split('-')
+        const finalDate = new Date(event.finalDate).toISOString().split('-')
+        
+        const date =  `${newDate[2].split('T')[0]}/${newDate[1]}/${newDate[0]}`
+        const finaldate =  `${finalDate[2].split('T')[0]}/${finalDate[1]}/${finalDate[0]}`
+
+
+        const textLines = this.wrapText(`${user?.name} concluiu o curso de ${event.title} no periodo de ${date} ate ${finaldate} com carga horaria de ${event.hours} horas`,
             font,
             10,
             400,
