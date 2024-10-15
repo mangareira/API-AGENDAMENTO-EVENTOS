@@ -7,6 +7,8 @@ export class Event {
         public title: string,
         public location: Location,
         public date: Date,
+        public finalDate: Date,
+        public hours: number,
         public description: string,
         public banner: string,
         public flyers: string[],
