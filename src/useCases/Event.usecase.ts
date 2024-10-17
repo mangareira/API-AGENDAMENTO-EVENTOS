@@ -783,7 +783,7 @@ export class EventUseCase {
         const finaldate =  `${finalDate[2].split('T')[0]}/${finalDate[1]}/${finalDate[0]}`
 
 
-        const textLines = this.wrapText(`${user?.name} concluiu o curso de ${event.title} no periodo de ${date} ate ${finaldate} com carga horaria de ${event.hours} horas`,
+        const textLines = this.wrapText(`${user?.name}, participou do ${event.title}, na qualidade participante, promovido durante ${date} ate ${finaldate}, totalizando ${event.hours} horas`,
             font,
             10,
             400,
@@ -801,6 +801,18 @@ export class EventUseCase {
         });
         yPosition -= 10 + 20; // Avançar para a próxima linha
         });
+        const mesesEmPortugues = [
+            "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+            "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"
+        ]
+        const mes = mesesEmPortugues[parseInt(newDate[1])];
+        page.drawText(`Barra do corda (MA), ${newDate[2].split('T')[0]} de ${mes} de ${newDate[0]}`, {
+            x: 130,
+            y: height - 400,
+            font,
+            size: 15,
+            color: rgb(0,0,0)
+        })
         
         const pdfBytes = await pdfDoc.save();
         if(quantity > 1) await this.sendCert(user,pdfBytes)        
@@ -854,7 +866,7 @@ export class EventUseCase {
                                     new Paragraph({
                                         children: [
                                             new ImageRun({
-                                                data: fs.readFileSync("./src/infra/upload/tmp/uploads/logo.png"),
+                                                data: fs.readFileSync(path.resolve(__dirname, "../infra/upload/tmp/uploads/logo.png")),
                                                 transformation: {
                                                     height: 50,
                                                     width: 300
