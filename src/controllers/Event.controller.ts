@@ -409,4 +409,14 @@ export class EventController {
             next(error)
         }
     }
+    async slug(req: Request, res: Response, next: NextFunction) {
+        const { slug } = req.params
+
+        try {
+            const result = await this.eventUseCase.verification(slug)
+            res.status(200).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
 }
