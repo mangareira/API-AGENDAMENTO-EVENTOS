@@ -46,6 +46,7 @@ export class EventRoutes {
         this.router.get('/get-all-payments',authMiddleware, this.eventController.getAllPay.bind(this.eventController))
         this.router.get('/chart',authMiddleware, this.eventController.chart.bind(this.eventController))
         this.router.get('/list', this.eventController.exportList.bind(this.eventController))
+        this.router.get('/certificate/:slug', this.eventController.slug.bind(this.eventController))
         this.router.post('/new-pix/:txid',authMiddleware, this.eventController.newPix.bind(this.eventController))
         this.router.post('/:id/:user_id/participants',authMiddleware, this.eventController.addParticipant.bind(this.eventController))
         this.router.post('/create-account', this.eventController.createUserAccount.bind(this.eventController))

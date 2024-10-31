@@ -29,6 +29,7 @@ const userEventsSchema = new mongoose.Schema({
     tickets: String,
     discount: String,
     isConfirmed: Boolean,
+    slug: String,
     createdAt: {
         type: Date,
         default: Date.now
@@ -133,5 +134,16 @@ export class UserRepositoryMongoose implements UserRepository {
     }
     async isConfirm(id: string, isConfirm: boolean, eventId: string): Promise<void> {
         await UserModel.findOneAndUpdate({userId: id, eventId}, {isConfirmed: isConfirm})
+    }
+    async findSlug(slug: string): Promise<{userId: string, eventId: string} | undefined> {
+        const result = await UserModel.findOne(
+            { slug },
+            { userId: 1, eventId: 1, _id: 0 } // Projeção para retornar somente userId e eventId
+        ).exec();
+        if (!result) return undefined;
+        return {
+            userId: result.userId as string,
+            eventId: result.eventId as string
+        }
     }
 }

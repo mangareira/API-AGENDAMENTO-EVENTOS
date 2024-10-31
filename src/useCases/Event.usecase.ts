@@ -18,6 +18,7 @@ import { PDFDocument, PDFFont, StandardFonts, rgb } from "pdf-lib";
 import nodemailer, { SentMessageInfo } from 'nodemailer';
 import fs from 'fs';
 import { Document, HeadingLevel, ImageRun, Packer, Paragraph, Table, TableCell, TableRow, TextDirection, TextRun, VerticalAlign, WidthType } from "docx";
+import QRCode from 'qrcode'
 
 export class EventUseCase {
     constructor(private eventRepository: EventRepository) {}
@@ -131,6 +132,8 @@ export class EventUseCase {
                     expirationTime: String(paymentPix.response.data.calendario.expiracao)
             }
         }
+        const slug = this.generateRandomId(8)
+        participant.slug = slug
         user = await userRepository.add(participant)            
         
         const getPayment:any = await userRepository.findUser(user.userId) 
@@ -304,6 +307,11 @@ export class EventUseCase {
 
     async updateUser(user: UserAccount, userId: string) {
         const userAccountRepository = new UserAccountRepositoryMongoose()
+        if(user.password && user.password !== (await userAccountRepository.findUserById(userId))?.password) {
+            const hashPassword  = await hash(user.password, 10)
+            const isExists = await userAccountRepository.updateUser({...user, password: hashPassword}, userId)
+            return isExists
+        }
         const isExists = await userAccountRepository.updateUser(user, userId)
         if(!isExists) throw new HttpException(400, "User not Exists")
         return isExists
@@ -419,6 +427,8 @@ export class EventUseCase {
                     expirationTime: String(paymentPix.response.data.calendario.expiracao)
             }
         }
+        const slug = this.generateRandomId(8)
+        userPay.slug = slug
         
         user = await userRepository.add(userPay)            
         
@@ -591,7 +601,7 @@ export class EventUseCase {
         if(findEvent && eventId && userId) {
             const payment = await userRepository.findPay(eventId, userId)
             if(payment?.isConfirmed) {
-                const pdf = await this.createCertificate(user,findEvent,"fundo.png",1)
+                const pdf = await this.createCertificate(user,findEvent,"fundo.png",1, payment.slug)
                 return pdf
             }
             throw new HttpException(400, "Você não foi confimado a presença")
@@ -618,6 +628,25 @@ export class EventUseCase {
     async isConfirm(id: string, isConfirm: boolean, eventId: string) {
         const user = new UserRepositoryMongoose()
         await user.isConfirm(id, isConfirm, eventId)
+    }
+
+    async verification(slug: string) {
+        const userRepository = new UserRepositoryMongoose()
+        const userAccount = new UserAccountRepositoryMongoose()
+        if(slug == "undefined" ) throw new HttpException(400, "Slug necessary")
+        const findSlug = await userRepository.findSlug(slug)
+        if(!findSlug) throw new HttpException(404, "Certificado não reconhecido")
+        const user = await  userAccount.findUserById(findSlug.userId)
+        if(!user) throw new HttpException(404, "Usuario não encontrado")
+        const event = await this.eventRepository.findEventsById(findSlug.eventId)
+        if(!event) throw new HttpException(404, "Event not found")
+        return {
+            name: user.name,
+            cpf: user.cpf,
+            email: user.email,
+            eventName: event.title,
+            eventDate: event.date
+        }
     }
 
     private async getCityNameCoordinates(latitude: string, longitude: string) {
@@ -742,7 +771,7 @@ export class EventUseCase {
         return lines;
     }
 
-    private async createCertificate (user: UserAccount | undefined, event: Event, fileName: string, quantity: number) {
+    private async createCertificate (user: UserAccount | undefined, event: Event, fileName: string, quantity: number, slug?: string) {
         const pdfDoc = await PDFDocument.create()
         const page = pdfDoc.addPage([842, 595])
         if(fileName){    
@@ -805,6 +834,25 @@ export class EventUseCase {
             font,
             size: 15,
             color: rgb(0,0,0)
+        })
+        const qrCodeDataUrl = await QRCode.toDataURL(process.env.FRONT_URL + `/verification?slug=${slug}`);
+        const qrCodeImageBytes = await fetch(qrCodeDataUrl).then(res => res.arrayBuffer());
+    
+        const qrCodeImage = await pdfDoc.embedPng(qrCodeImageBytes);
+        const qrCodeSize = 100; 
+    
+        page.drawImage(qrCodeImage, {
+            x: width - qrCodeSize - 650, 
+            y: height - qrCodeSize - 420,
+            width: qrCodeSize,
+            height: qrCodeSize,
+        });
+
+        page.drawText(`Codigo de verificação: ${slug}`, {
+            size: 10,
+            lineHeight: 200,
+            x: width - 750,
+            y: height - 525
         })
         
         const pdfBytes = await pdfDoc.save();
@@ -1002,4 +1050,14 @@ export class EventUseCase {
         const buffer = await Packer.toBuffer(doc);
         return buffer
     }
+
+    private generateRandomId(length: number): string {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    }
+    
 }

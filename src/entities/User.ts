@@ -8,6 +8,7 @@ export class User{
         public tickets: string,
         public discount: string,
         public isConfirmed: boolean,
+        public slug?: string, 
         public _id?: string,
         public createdAt?: string
     ) {}
