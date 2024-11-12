@@ -805,7 +805,7 @@ export class EventUseCase {
         const finaldate =  `${finalDate[2].split('T')[0]}/${finalDate[1]}/${finalDate[0]}`
 
 
-        const textLines = this.wrapText(`Certificamos que ${user?.name}, participou do ${event.title}, na qualidade participante, promovido durante o dia ${(date === finaldate) ? `${date}` :`${date} ate ${finaldate}`}, totalizando ${event.hours} horas.`,
+        const textLines = this.wrapText(`Certificamos que ${user?.name}, participou do ${event.title}, na qualidade participante, promovido  ${(date === finaldate) ? `no dia ${date}` :`durante o periodo ${date} ate ${finaldate}`}, totalizando ${event.hours} horas.`,
             font,
             10,
             400,
@@ -827,7 +827,7 @@ export class EventUseCase {
             "janeiro", "fevereiro", "março", "abril", "maio", "junho",
             "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"
         ]
-        const mes = mesesEmPortugues[parseInt(newDate[1])];
+        const mes = mesesEmPortugues[parseInt(newDate[1]) - 1];
         page.drawText(`Barra do corda (MA), ${finalDate[2].split('T')[0]} de ${mes} de ${finalDate[0]}.`, {
             x: 130,
             y: height - 380,
