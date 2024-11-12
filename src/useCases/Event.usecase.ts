@@ -804,8 +804,11 @@ export class EventUseCase {
         const date =  `${newDate[2].split('T')[0]}/${newDate[1]}/${newDate[0]}`
         const finaldate =  `${finalDate[2].split('T')[0]}/${finalDate[1]}/${finalDate[0]}`
 
+        const porExtenso = require('numero-por-extenso')
 
-        const textLines = this.wrapText(`Certificamos que ${user?.name}, participou do ${event.title}, na qualidade participante, promovido  ${(date === finaldate) ? `no dia ${date}` :`durante o periodo ${date} ate ${finaldate}`}, totalizando ${event.hours} horas.`,
+        const horasTexto = porExtenso.porExtenso(event.hours)
+
+        const textLines = this.wrapText(`Certificamos que ${user?.name} participou do ${event.title}, realizado ${(date === finaldate) ? `no dia ${date}` :`no periodo de ${date} a ${finaldate}`}, com carga horária de ${event.hours} (${horasTexto}) horas.`,
             font,
             10,
             400,
