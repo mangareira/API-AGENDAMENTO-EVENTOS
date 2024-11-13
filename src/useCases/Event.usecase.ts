@@ -649,6 +649,15 @@ export class EventUseCase {
         }
     }
 
+    async confirmAll(id: string) {
+        const userRepository = new UserRepositoryMongoose()
+        const users = await userRepository.findAllpaysEvent(id)
+        if(!users) throw new HttpException(400, "Pays not found")
+        await Promise.all(users.map(async (user) => {
+            const findUser = await userRepository.isConfirm(user.userId, true, id)
+        }))
+    }
+
     private async getCityNameCoordinates(latitude: string, longitude: string) {
 
         try {
