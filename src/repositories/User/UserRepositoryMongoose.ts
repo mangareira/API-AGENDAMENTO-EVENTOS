@@ -146,4 +146,8 @@ export class UserRepositoryMongoose implements UserRepository {
             eventId: result.eventId as string
         }
     }
+    async findAllpaysEvent(id: string | null | undefined): Promise<User[] | undefined> {
+        const result = await UserModel.find({eventId: id}).exec()
+        return result.map((pay) => pay.toObject() )
+    }
 }

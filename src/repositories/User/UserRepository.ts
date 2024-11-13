@@ -16,4 +16,5 @@ export interface UserRepository {
     export(data: IExport): Promise<User[]| undefined>
     isConfirm(id: string, isConfirm: boolean, eventId: string): Promise<void>
     findSlug(slug: string): Promise<{userId: string, eventId: string} | undefined>
+    findAllpaysEvent(id: string): Promise<User[] | undefined>
 }

@@ -419,4 +419,14 @@ export class EventController {
             next(error)
         }
     }
+    async confirmAll(req: Request, res: Response, next: NextFunction) {
+        const { id } = req.params
+
+        try {
+            await this.eventUseCase.confirmAll(id)
+            res.status(200).json({message: "Todos confirmados"})
+        } catch (error) {
+            next(error)
+        }
+    }
 }

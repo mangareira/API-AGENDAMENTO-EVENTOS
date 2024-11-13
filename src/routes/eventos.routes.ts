@@ -57,6 +57,7 @@ export class EventRoutes {
         this.router.post('/exports',authMiddleware, this.eventController.export.bind(this.eventController))
         this.router.post('/certificate',authMiddleware,this.eventController.certificate.bind(this.eventController))
         this.router.post('/my-certificate',authMiddleware ,this.eventController.myCertificate.bind(this.eventController))
+        this.router.post('/confirm-all/:id',authMiddleware ,this.eventController.confirmAll.bind(this.eventController))
         this.router.put('/update-user/:id',authMiddleware, this.eventController.updateUser.bind(this.eventController))
         this.router.put('/update-event/:id',authMiddleware, this.eventController.updateEvent.bind(this.eventController))
         this.router.put('/cancelled-sub',authMiddleware, this.eventController.cancelledSub.bind(this.eventController))
