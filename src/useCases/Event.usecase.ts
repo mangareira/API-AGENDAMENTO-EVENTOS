@@ -30,7 +30,6 @@ export class EventUseCase {
         if (!eventData.banner) {
             throw new HttpException(400, 'Banner is required');
           }
-        if (!eventData.flyers) throw new HttpException(400, 'Flyers is required');
         if (!eventData.date) throw new HttpException(400, 'Date is required');
 
         const verifyEvent = await this.eventRepository.findByLocationAndDate(eventData.location, eventData.date)
