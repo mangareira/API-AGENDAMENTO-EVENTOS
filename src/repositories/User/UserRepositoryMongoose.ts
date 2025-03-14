@@ -86,18 +86,18 @@ export class UserRepositoryMongoose implements UserRepository {
         const result = await UserModel.findOne({'payment.txid': txid}).exec()        
         return result ? result.toObject() : undefined
     }
-    async updateUser(data: any, qrCode: string, txid: string): Promise<User | undefined> {
+    async updateUser(data: any, qrCode: any, txid: string): Promise<User | undefined> {
         const user = await UserModel.findOne({'payment.txid': txid}).exec()
         if (!user) {
             return undefined;
         }        
         user.payment = {
             status: 'Pendente',
-            valor: data.valor.original,
-            txid: data.txid,
-            qrCode,
-            pixCopiaECola: data.pixCopiaECola,
-            expirationTime: data.calendario.expiracao
+            valor: data.value,
+            txid: data.id,
+            qrCode: qrCode.encodedImage,
+            pixCopiaECola: qrCode.payload,
+            expirationTime: qrCode.expirationDate
         }
         await user.save()
         return user ? user.toObject() : undefined;

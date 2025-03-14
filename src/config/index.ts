@@ -1,22 +1,15 @@
 import axios from "axios";
-import { agent } from "../infra/getCerts/certs";
-import { authenticate } from "../Auth";
+require("dotenv").config()
 
-export const API = async  (credintial: any) =>{
+export const API = async  () =>{
 
-    
-    const authResponse = await authenticate(credintial)    
-    
-    const accessToken = await authResponse.data?.access_token    
-    
-    const post = axios.create({
-        baseURL: process.env.GN_ENDPOINT,
-        httpsAgent: agent,
+    const api = axios.create({
+        baseURL: process.env.ASAAS_ENDPOIT,
         headers: {
-            Authorization: `Bearer ${accessToken}`,
+            "access_token": process.env.ASAAS_TOKEN,
             'Content-Type': 'application/json'
         }
     })
     
-    return post
+    return api
 }

@@ -20,10 +20,6 @@ export class EventRoutes {
                     name: 'banner',
                     maxCount: 1
                 },
-                {
-                    name: 'flyers',
-                    maxCount: 3
-                },
             ]), this.eventController.create.bind(this.eventController)
         )
         this.router.get('/name', this.eventController.findEventsByName.bind(this.eventController))

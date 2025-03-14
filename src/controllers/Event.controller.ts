@@ -174,8 +174,6 @@ export class EventController {
     async webhook(req: Request, res: Response, next: NextFunction) {
         const data = req.body
         try {
-            console.log(data);
-            
             const result = await this.eventUseCase.webhook(data)
             return res.status(200).send(result)
         } catch (error) {

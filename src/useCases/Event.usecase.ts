@@ -121,14 +121,14 @@ export class EventUseCase {
                     expirationTime: ''
             }
         } else {
-            const paymentPix =  await this.payment(paymentAmount)
+            const paymentPix =  await this.payment(paymentAmount, userAccount)
             participant.payment = {
                     status: 'Pendente', 
-                    txid: paymentPix.response.data.txid, 
+                    txid: paymentPix.response.data.id, 
                     valor: paymentAmount,
-                    qrCode:paymentPix.qrcode.data.imagemQrcode,
-                    pixCopiaECola: paymentPix.response.data.pixCopiaECola,
-                    expirationTime: String(paymentPix.response.data.calendario.expiracao)
+                    qrCode:paymentPix.qrcode.data.encodedImage,
+                    pixCopiaECola: paymentPix.qrcode.data.payload,
+                    expirationTime: String(paymentPix.qrcode.data.expirationDate)
             }
         }
         const slug = this.generateRandomId(8)
@@ -240,7 +240,10 @@ export class EventUseCase {
 
     async webhook (data: any) {        
         const userevent = new UserRepositoryMongoose()
-        // const result  = userevent.findTxid(data.pix[0].txid)
+        if(data.event === "PAYMENT_RECEIVED"){
+            const result  = await userevent.findTxid(data.payment.id)
+            if(!result) throw new HttpException(400, "Payment not found")
+        }
         return {recive: true}
     }
     
@@ -265,11 +268,14 @@ export class EventUseCase {
 
     async newPix(txid: string) {
         const userRepository = new UserRepositoryMongoose()
+        const userAccountRepository = new UserAccountRepositoryMongoose()
         const isExists = await userRepository.findPayByTxid(txid)
         if(!isExists) throw new HttpException(400, 'This payment not exists')
+        const user = await userAccountRepository.findUserById(isExists.userId)
+        if(!user) throw new HttpException(400, "Usuario não encotrado")
         const newValue = (isExists.payment.valor.split(','))[0] + '.' +(isExists.payment.valor.split(','))[1] 
-        const newPix  = await this.payment(newValue)
-        const update = await userRepository.updateUser(newPix.response.data, newPix.qrcode.data.imagemQrcode,txid)
+        const newPix  = await this.updatePix(newValue, user, txid)
+        const update = await userRepository.updateUser(newPix.response.data, newPix.qrcode.data,txid)
         return update
         
     }
@@ -701,26 +707,46 @@ export class EventUseCase {
         return deg * (Math.PI / 180)
     }
 
-    private async payment(valor: string) {
+    private async payment(valor: string, user?: UserAccount) {
         
-        const api =  await API({
-            clientId: process.env.GN_CLIENT_ID,
-            clientSecret: process.env.GN_CLIENT_SECRET
-        })              
-        const dataCob = {
-            "calendario": {
-              "expiracao": 3600
-            },
-            "valor": {
-              "original": valor
-            },
-            "chave": "71cdf9ba-c695-4e3c-b010-abb521a3f1be",
-            "solicitacaoPagador": "Cobrança dos serviços prestados."
-          }
-        
+        const api =  await API()  
 
-        const response = await api.post('/v2/cob', dataCob).catch()       
-        const qrcode = await api.get(`/v2/loc/${response.data.loc.id}/qrcode`)
+        const isExists = await api.get(`/customers?cpfCnpj=${user?.cpf}`)
+        
+        let dataCob = {}
+
+
+        if(isExists.data.data.length == 0) {
+            
+            const client = await api.post("/customers", {
+                name: user?.name,
+                cpfCnpj: user?.cpf
+            })
+            console.log(client.data);
+            
+            dataCob = {
+                customer: client.data.id ,
+                billingType: "PIX",
+                value: valor,
+                dueDate: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`        
+            }
+
+            const response = await api.post("/payments", dataCob)
+            const qrcode = await api.post(`/payments/${response.data.id}/pixQrCode`)
+            return {response, qrcode}
+
+        }
+
+        dataCob = {
+            customer:isExists.data.data[0].id ,
+            billingType: "PIX",
+            value: valor,
+            dueDate: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`
+        }
+        
+        const response = await api.post("/payments", dataCob)
+        const qrcode = await api.post(`/payments/${response.data.id}/pixQrCode`)
+
         
         return {
             qrcode, response
@@ -1069,6 +1095,23 @@ export class EventUseCase {
             result += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         return result;
+    }
+
+    private async updatePix(valor: string, user: UserAccount, txid: string) {
+        const api =  await API()  
+
+        const dataCob = {
+            bilingType: "PIX",
+            value: valor,
+            dueDate: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate() + 1}`
+        }
+
+        const response = await api.put(`/payments/${txid}`, dataCob)
+        const qrcode = await api.post(`/payments/${response.data.id}/pixQrCode`)        
+
+        return {
+            response, qrcode
+        }
     }
     
 }
