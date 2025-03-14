@@ -177,7 +177,7 @@ export class EventController {
             console.log(data);
             
             const result = await this.eventUseCase.webhook(data)
-            return res.status(200).end(result)
+            return res.status(200).send(result)
         } catch (error) {
             next(error)
         }
