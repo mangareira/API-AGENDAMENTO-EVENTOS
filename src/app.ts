@@ -23,7 +23,9 @@ export class App{
     }
     private middlewareInitializer() {
         this.app.use(express.json())
-        this.app.use(cors())
+        this.app.use(cors({
+            origin: "https://eventos.unicentroma.edu.br"
+        }))
         this.app.use('/uploads', express.static(path.join(__dirname, './infra/upload/tmp/uploads')))
         this.app.use(express.urlencoded({extended: true}))
     }
