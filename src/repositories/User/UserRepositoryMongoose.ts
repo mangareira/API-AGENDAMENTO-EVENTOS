@@ -68,6 +68,7 @@ export class UserRepositoryMongoose implements UserRepository {
         
         user.payment = {
             status: 'Pago',
+            txid: user.payment?.txid,
             valor: user.payment?.valor
         }
         await user.save()
