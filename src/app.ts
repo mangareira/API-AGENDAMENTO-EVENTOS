@@ -23,15 +23,19 @@ export class App{
     }
     private middlewareInitializer() {
         this.app.use(express.json())
-        this.app.use(cors());
-        this.app.use((req, res, next) => {
+        this.app.use(cors({
+            origin: "https://eventos.unicentroma.edu.br",
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+            allowedHeaders: ['Content-Type', 'Authorization'],
+            credentials: true
+        }));
+        
+        this.app.options('*', (req, res) => {
             res.header("Access-Control-Allow-Origin", "https://eventos.unicentroma.edu.br");
             res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
             res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-            if (req.method === "OPTIONS") {
-                return res.sendStatus(200);
-            }
-            next();
+            res.header("Access-Control-Allow-Credentials", "true");
+            res.sendStatus(204);
         });
         this.app.use('/uploads', express.static(path.join(__dirname, './infra/upload/tmp/uploads')))
         this.app.use(express.urlencoded({extended: true}))
