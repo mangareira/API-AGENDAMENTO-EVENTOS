@@ -24,7 +24,9 @@ export class App{
     private middlewareInitializer() {
         this.app.use(express.json())
         this.app.use(cors({
-            origin: "https://eventos.unicentroma.edu.br"
+            origin: "https://eventos.unicentroma.edu.br", // Corrigido a URL
+            methods: ['GET', 'POST', 'PUT', 'DELETE'],    // Métodos permitidos
+            allowedHeaders: ['Content-Type', 'Authorization'] // Headers permitidos
         }))
         this.app.use('/uploads', express.static(path.join(__dirname, './infra/upload/tmp/uploads')))
         this.app.use(express.urlencoded({extended: true}))
