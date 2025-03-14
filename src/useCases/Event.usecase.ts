@@ -240,8 +240,8 @@ export class EventUseCase {
 
     async webhook (data: any) {        
         const userevent = new UserRepositoryMongoose()
-        const result  = userevent.findTxid(data.pix[0].txid)
-        return result
+        // const result  = userevent.findTxid(data.pix[0].txid)
+        return {recive: true}
     }
     
     async getPartDetails(id: string) {
