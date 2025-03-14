@@ -28,6 +28,12 @@ export class App{
             methods: ['GET', 'POST', 'PUT', 'DELETE'],    // Métodos permitidos
             allowedHeaders: ['Content-Type', 'Authorization'] // Headers permitidos
         }))
+        this.app.use((req, res, next) => {
+            res.header('Access-Control-Allow-Origin', 'https://eventos.unicentroma.edu.br');
+            res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+            res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+            next();
+        });
         this.app.use('/uploads', express.static(path.join(__dirname, './infra/upload/tmp/uploads')))
         this.app.use(express.urlencoded({extended: true}))
     }
