@@ -17,4 +17,5 @@ export interface UserRepository {
     isConfirm(id: string, isConfirm: boolean, eventId: string): Promise<void>
     findSlug(slug: string): Promise<{userId: string, eventId: string} | undefined>
     findAllpaysEvent(id: string): Promise<User[] | undefined>
+    deletePayWebHook(txid: string): Promise<void>
 }

@@ -244,6 +244,9 @@ export class EventUseCase {
             const result  = await userevent.findTxid(data.payment.id)
             if(!result) throw new HttpException(400, "Payment not found")
         }
+        if(data.event === "PAYMENT_OVERDUE") {
+            const result = await userevent.deletePayWebHook(data.payment.id)
+        }
         return {recive: true}
     }
     
@@ -617,18 +620,30 @@ export class EventUseCase {
     }
 
     async listEvent(id: string) {
-        const findEvent = await this.eventRepository.findEventsById(id)
-        const userAccount = new UserAccountRepositoryMongoose()
-        if(!findEvent) throw new HttpException(400, "evento não encontrado")
-        const participants = await Promise.all(findEvent.participants.map(async (id) => {
-            const participant = await userAccount.findUserById(id)
-            return {
-                name: participant?.name
-            }
-        }))
-        const buffer = await this.createList(participants, findEvent.title, findEvent.date)
-        return buffer
+        const findEvent = await this.eventRepository.findEventsById(id);
+        if (!findEvent) throw new HttpException(400, "evento não encontrado");
+    
+        const userAccount = new UserAccountRepositoryMongoose();
+        const user = new UserRepositoryMongoose();
+    
+        const participants = (
+            await Promise.all(
+                findEvent.participants.map(async (participantId) => {
+                    const participant = await userAccount.findUserById(participantId);
+                    const paymentConfirm = await user.findUser(participantId);
+                    
+                    if (paymentConfirm?.payment.status === "Pago") {
+                        return { name: participant?.name };
+                    }
+                    return null;
+                })
+            )
+        ).filter(Boolean);
+    
+        const buffer = await this.createList(participants, findEvent.title, findEvent.date);
+        return buffer;
     }
+    
 
     async isConfirm(id: string, isConfirm: boolean, eventId: string) {
         const user = new UserRepositoryMongoose()

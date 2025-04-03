@@ -151,4 +151,22 @@ export class UserRepositoryMongoose implements UserRepository {
         const result = await UserModel.find({eventId: id}).exec()
         return result.map((pay) => pay.toObject() )
     }
+
+    async deletePayWebHook(txid: string): Promise<void> {
+        const pay = await UserModel.findOne({"payment.txid": txid}).exec()
+        if(!pay) {
+            return
+        }
+        pay.eventId = ''
+        pay.payment = {
+            expirationTime: '',
+            pixCopiaECola: '',
+            qrCode: '',
+            status: "cancelled",
+            txid: '',
+            valor: pay.payment?.valor,
+        }
+        pay.save()
+        return
+    }
 }
