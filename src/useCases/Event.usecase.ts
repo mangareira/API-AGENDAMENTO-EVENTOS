@@ -413,7 +413,7 @@ export class EventUseCase {
             eventId,
             userId: user_id
         }                 
-        if(event.price[0].amount == "") {
+        if(event.price[0].amount == "" || discount === "Discount") {
             userPay.payment = {
                 status: 'gratis', 
                 txid: '', 
