@@ -632,7 +632,7 @@ export class EventUseCase {
                     const participant = await userAccount.findUserById(participantId);
                     const paymentConfirm = await user.findUser(participantId);
                     
-                    if (paymentConfirm?.payment.status === "Pago" || "gratis") {
+                    if (paymentConfirm?.payment.status === "Pago" || paymentConfirm?.payment.status === "gratis") {
                         return { name: participant?.name };
                     }
                     return null;
