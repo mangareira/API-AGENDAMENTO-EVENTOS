@@ -589,7 +589,7 @@ export class EventUseCase {
             await Promise.all(event.participants.map(async (userId) => {
                 const payment = await userRepository.findPay(id, userId)
                 if(payment) {
-                    if(payment.payment.status == "Pago" || "gratis") {
+                    if(payment.payment.status == "Pago" ||payment.payment.status ==  "gratis") {
                         const user = await userAccountRepository.findUserById(userId)
                         this.createCertificate(user,event,fileName, quantity)
                     }
