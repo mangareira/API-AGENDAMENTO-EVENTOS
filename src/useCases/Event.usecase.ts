@@ -836,57 +836,51 @@ export class EventUseCase {
             })
         }
         const { width, height } = page.getSize();
-        const fontSizeTitle = 62;
         const font = await pdfDoc.embedFont(StandardFonts.TimesRoman);
-
-        page.drawText('CERTIFICADO', {
-            x: 215,
-            y: height - 150,
-            size: fontSizeTitle,
+        const fontBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
+        page.drawText("A Faculdade do Centro Maranhense - FCMA certifica que ", {
+            size: 16,
             font,
+            x: 230,
+            y: 350,
+            color: rgb(0,0,0)
+        })
+        if(!user) return
+        const formattedName = this.capitalizeName(user.name);
+        const userNameWidth = fontBold.widthOfTextAtSize(formattedName, 20);
+
+        page.drawText(formattedName, {
+            x: (width - userNameWidth + 60)/2,
+            y: 330,
+            size: 16,
+            font: fontBold,
             color: rgb(0, 0, 0),
         });
-
-        const newDate = new Date(event.date).toISOString().split('-')
-        const finalDate = new Date(event.finalDate).toISOString().split('-')
-        
-        const date =  `${newDate[2].split('T')[0]}/${newDate[1]}/${newDate[0]}`
-        const finaldate =  `${finalDate[2].split('T')[0]}/${finalDate[1]}/${finalDate[0]}`
-
         const porExtenso = require('numero-por-extenso')
 
         const horasTexto = porExtenso.porExtenso(event.hours)
-
-        const textLines = this.wrapText(`Certificamos que ${user?.name} participou do ${event.title}, realizado ${(date === finaldate) ? `no dia ${date}` :`no periodo de ${date} a ${finaldate}`}, com carga horária de ${event.hours} (${horasTexto}) horas.`,
+        const textLines = this.wrapText(
+            `participou do ${event.title}, realizado na cidade de ${event.formattedAddress.split(",")[2]}, com carga horária de ${event.hours} (${horasTexto}) horas.`,
             font,
-            10,
-            400,
-        )
-
-        let yPosition: number = height - 160 - fontSizeTitle - 50;
+            16,
+            500
+        );
+        
+        let yPosition: number = height - 290;
+        
         textLines.forEach(line => {
-        page.drawText(line, {
-            x: 130 ,
-            y: yPosition,
-            size: 15,
-            font,
-            color: rgb(0, 0, 0),
+            const lineWidth = font.widthOfTextAtSize(line, 16);
+            const xPosition = (width - lineWidth) / 2;
+            page.drawText(line, {
+                x: xPosition,
+                y: yPosition,
+                size: 16,
+                font,
+                color: rgb(0, 0, 0),
+            });
+            yPosition -= 20;
+        });
 
-        });
-        yPosition -= 10 + 20; // Avançar para a próxima linha
-        });
-        const mesesEmPortugues = [
-            "janeiro", "fevereiro", "março", "abril", "maio", "junho",
-            "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"
-        ]
-        const mes = mesesEmPortugues[parseInt(newDate[1]) - 1];
-        page.drawText(`Barra do corda (MA), ${finalDate[2].split('T')[0]} de ${mes} de ${finalDate[0]}.`, {
-            x: 130,
-            y: height - 380,
-            font,
-            size: 15,
-            color: rgb(0,0,0)
-        })
         const qrCodeDataUrl = await QRCode.toDataURL(process.env.FRONT_URL + `/verification?slug=${slug}`);
         const qrCodeImageBytes = await fetch(qrCodeDataUrl).then(res => res.arrayBuffer());
     
@@ -1127,6 +1121,20 @@ export class EventUseCase {
         return {
             response, qrcode
         }
+    }
+
+    private capitalizeName(name: string): string {
+        const lowercaseWords = ["de", "do", "da", "dos", "das", "e"]; 
+        return name
+            .toLowerCase()
+            .split(' ') 
+            .map((word, index) => {
+                if (index !== 0 && lowercaseWords.includes(word)) {
+                    return word;
+                }
+                return word.charAt(0).toUpperCase() + word.slice(1);
+            })
+            .join(' '); 
     }
     
 }
